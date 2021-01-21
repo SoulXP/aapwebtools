@@ -1,5 +1,5 @@
 {
-  "name": "client",
+  "name": "aapwebtools_client",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -39,7 +39,11 @@
     "parserOptions": {
       "parser": "babel-eslint"
     },
-    "rules": {}
+    "rules": {
+      "indent": 0,
+      "no-tabs": 0,
+      "semi": 0
+    }
   },
   "browserslist": [
     "> 1%",
