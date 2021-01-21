@@ -1,6 +1,8 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const fs = require("fs");
+const https = require("https");
 
 const app = express();
 app.use(bodyParser.json());
@@ -8,10 +10,18 @@ app.use(cors());
 
 const port = 8081;
 
-app.post("/register", (req, res) => {
-	res.send({ message: `User ${req.body.email} with password ${req.body.password} registered.`});
+app.get("/", (req, res) => {
+	//res.send({ message: `User ${req.body.email} with password ${req.body.password} registered.`});
+	res.send("Hello World!");
 });
 
-app.listen(port, () => {
-	console.log(`Server is running on http://localhost:${port}`);
+https.createServer({
+	key: fs.readFileSync("./certificates/localhost-private.pem"),
+	cert: fs.readFileSync("./certificates/localhost-cert.pem")
+}, app).listen(port, () => {
+	console.log(`Server is running on port ${port}`);
 });
+
+// app.listen(port, () => {
+// 	console.log(`Server is running on http://localhost:${port}`);
+// });

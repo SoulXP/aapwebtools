@@ -3,6 +3,7 @@ node_modules
 /dist
 .editorconfig
 .browserslistrc
+certificates
 
 # local env files
 .env.local
@@ -24,3 +25,4 @@ pnpm-debug.log*
 *.sw?
 **/.eslintrc.js
 **/.eslintrc.json
+jsconfig.json
