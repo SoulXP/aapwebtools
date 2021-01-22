@@ -6,6 +6,8 @@ node_modules
 .browserslistrc
 certificates
 package.json
+vetur.config.js
+jsconfig.json
 
 # local env files
 .env

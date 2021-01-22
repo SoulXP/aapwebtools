@@ -1,6 +1,6 @@
 <template>
-  <div>
-    Welcome to AAP Bad Lines
+  <div id="main">
+    <h3>Welcome to AAP Bad Lines</h3>
     <div v-if="userLoggedIn">
       <BadLineForm/>
     </div>
@@ -27,4 +27,17 @@ export default {
 </script>
 
 <style scoped>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  #main {
+    display: flex;
+    margin-top: 15%;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
 </style>
