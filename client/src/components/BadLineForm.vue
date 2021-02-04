@@ -4,9 +4,7 @@
             <div class="form-element">
                 <label for="show">Show Name</label>
                 <select v-model="showName" name="show">
-                    <option>One</option>
-                    <option>Two</option>
-                    <option>Three</option>
+                    <option v-for="name in showNames" :key="name">{{ name }}</option>
                 </select>
             </div>
             <div class="form-element">
@@ -29,7 +27,11 @@ export default {
     name: 'BadLineForm',
     data () {
         return {
-            showName: '',
+            showNames: [
+                'One',
+                'Two',
+                'Three'
+            ],
             characterName: '',
             line: ''
         }
@@ -62,6 +64,7 @@ export default {
     * {
         margin: 0;
         box-sizing: border-box;
+        font-family: 'Poppins', sans-serif;
     }
 
     #badline-form {
@@ -78,7 +81,8 @@ export default {
         max-width: 250px;
         margin-top: 0.5em;
         padding: 0.75em;
-        border: none;
+        border: 0.1em solid black;
+        border-radius: 4px;
     }
 
     #badline-form input:focus, #badline-form textarea:focus, #badline-form select:focus {
@@ -91,13 +95,16 @@ export default {
         height: 200px;
         padding: 0.75em;
         margin-top: 0.5em;
-        border: none;
+        border: 0.1em solid black;
+        border-radius: 4px;
     }
 
     #badline-form select {
         max-width: 250px;
         margin-top: 0.5em;
         padding: 0.75em;
+        border: 0.1em solid black;
+        border-radius: 4px;
     }
 
     #badline-form button {
@@ -107,12 +114,15 @@ export default {
 
     #badline-form .form-group {
         display: flex;
+        width: 100%;
         flex-direction: column;
-        justify-content: space-between;
+        justify-content: flex-start;
+        align-items: flex-start;
     }
 
     #badline-form .form-element {
         display: flex;
+        min-width: 100%;
         flex-direction: column;
         justify-content: space-between;
         margin-top: 0.5em;
