@@ -7,5 +7,6 @@
 
   * {
       font-family: 'Poppins', sans-serif;
+      color: #EEEEEE;
   }
 </style>

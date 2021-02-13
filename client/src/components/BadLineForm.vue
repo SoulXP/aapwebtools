@@ -65,12 +65,14 @@ export default {
         margin: 0;
         box-sizing: border-box;
         font-family: 'Poppins', sans-serif;
+        color: #EEEEEE;
+        outline: none;
     }
 
     #badline-form {
         display: flex;
         margin: 0;
-        max-width: 500px;
+        width: 750px;
         flex-direction: column;
         justify-content: center;
         align-items: center;
@@ -78,15 +80,12 @@ export default {
     }
 
     #badline-form input {
-        max-width: 250px;
+        max-width: 750px;
         margin-top: 0.5em;
         padding: 0.75em;
-        border: 0.1em solid black;
+        border: 0.1em solid #757575;
         border-radius: 4px;
-    }
-
-    #badline-form input:focus, #badline-form textarea:focus, #badline-form select:focus {
-        outline: none;
+        background-color: #353535;
     }
 
     #badline-form textarea {
@@ -95,21 +94,47 @@ export default {
         height: 200px;
         padding: 0.75em;
         margin-top: 0.5em;
-        border: 0.1em solid black;
+        border: 0.1em solid #757575;
         border-radius: 4px;
+        background-color: #353535;
     }
 
     #badline-form select {
-        max-width: 250px;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        -ms-appearance: none;
+        max-width: 750px;
         margin-top: 0.5em;
         padding: 0.75em;
-        border: 0.1em solid black;
+        border: 0.1em solid #757575;
+        background-color: #353535;
         border-radius: 4px;
     }
 
     #badline-form button {
-        max-width: 250px;
-        margin-top: 0.5em;
+        max-width: 750px;
+        height: 3em;
+        width: 100%;
+        margin-top: 1em;
+        background-color: #AA0025;;
+        border: none;
+    }
+
+    #badline-form select:focus, #badline-form textarea:focus, #badline-form input:focus {
+        border-color: #AA0025;
+    }
+
+    #badline-form button:hover {
+        background-color: #BB0025;
+    }
+
+    #badline-form button:active {
+        background-color:#CC0025;
+    }
+
+    #badline-form button:focus {
+        border: 0.1em solid #CC0025;
     }
 
     #badline-form .form-group {
