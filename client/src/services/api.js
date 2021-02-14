@@ -2,7 +2,7 @@ import axios from 'axios';
 export default () => {
     const instance = axios.create({
         // TODO: Load enviroment
-        baseURL: 'http://102.132.255.252/badlines'
+        baseURL: 'http://localhost:8081/badlines'
     });
     return instance;
 }
