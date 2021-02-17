@@ -109,6 +109,7 @@ export default {
         -moz-appearance: none;
         -ms-appearance: none;
         max-width: 820px;
+        margin-top: 0.5em;
         padding: 0.75em;
         border: 0.1em solid #757575;
         background-color: #505050;

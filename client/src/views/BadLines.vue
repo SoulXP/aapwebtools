@@ -1,19 +1,21 @@
 <template>
-<!-- <Navigation class="navigation-main"/> -->
-<div id="badlines-container">
-  <div id="badlines-main">
-    <h1 class="aap-wt-semibold"><span class="aap-red aap-wt-light">AFRICA</span> Audio Post.</h1>
-    <h3 class="badlines-title">Bad Lines</h3>
-    <div v-if="userLoggedIn">
-      <BadLineForm/>
+<div>
+  <Navigation class="navigation-main"/>
+  <div id="badlines-container">
+    <div id="badlines-main">
+      <h1 class="aap-wt-semibold"><span class="aap-red aap-wt-light">AFRICA</span> Audio Post.</h1>
+      <h3 class="badlines-title">Bad Lines</h3>
+      <div v-if="userLoggedIn">
+        <BadLineForm/>
+      </div>
+      <UserDataForm v-else/>
     </div>
-    <UserDataForm v-else/>
   </div>
 </div>
 </template>
 
 <script>
-// import Navigation from '@/compnents/Navigation.vue';
+import Navigation from '@/components/Navigation.vue';
 import UserDataForm from '@/components/UserDataForm.vue';
 import BadLineForm from '@/components/BadLineForm.vue';
 
@@ -25,7 +27,7 @@ export default {
     }
   },
   components: {
-    // Navigation,
+    Navigation,
     UserDataForm,
     BadLineForm
   }

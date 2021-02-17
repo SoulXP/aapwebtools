@@ -1,11 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Landing from '../views/Landing.vue';
+import BadLines from '../views/BadLines.vue';
 
 const routes = [
   {
     path: '/',
-    name: 'Landing',
-    component: Landing
+    name: 'BadLines',
+    component: BadLines
   }
 ];
 
