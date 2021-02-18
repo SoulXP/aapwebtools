@@ -1,5 +1,5 @@
 <template>
-	<div></div>
+	<h1>Welcome to <span class="aap-red aap-wt-bold aap-tr-up">Africa</span> Audio Post.</h1>
 </template>
 
 <script>

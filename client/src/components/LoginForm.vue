@@ -1,31 +1,32 @@
 <template>
-	<form id="badline-form" action="" novalidate>
-		<div class="form-group">
-			<div class="form-element">
-				<label for="show">Show Name</label>
-				<select v-model="showName" name="show">
-					<option v-for="name in showNames" :key="name">{{ name }}</option>
-				</select>
+	<div id="loginform-container">
+		<h1 class="aap-wt-normal aap-sz-28">AAP Tribe Login</h1>
+		<form id="login-form" action="" novalidate>
+			<div class="form-group">
+				<div class="form-element">
+					<label for="show">Username or email address</label>
+					<input type="text" id="show">
+				</div>
+				<div class="form-element">
+					<label for="character_name">Password</label>
+					<input type="password" id="character_name">
+				</div>
 			</div>
-			<div class="form-element">
-				<label for="character">Character Name</label>
-				<input v-model="characterName" type="text" id="character_name">
-			</div>
+			<button @click.prevent="">Log in</button>
+		</form>
+		<div id="loginform-register-container">
+			<p>Need an account? <a href="#">Register here.</a></p>
 		</div>
-		<div class="form-element">
-			<label for="line">Line</label>
-			<textarea v-model="line" name="line" id="line" cols="30" rows="10"></textarea>
-		</div>
-		<button @click.prevent="validateForm()">Submit</button>
-	</form>
+	</div>
 </template>
 
 <script>
-import services from '@/services/services.js';
-import { ref } from 'vue';
+// import services from '@/services/services.js';
+// import { ref } from 'vue';
 
 export default {
 	name: 'LoginForm'
+}
 </script>
 
 <style scoped>
@@ -38,80 +39,87 @@ export default {
 		background: none;
 	}
 
-	#badline-form {
+	#loginform-container {
+		display: flex;
+		justify-content: space-evenly;
+		align-items: center;
+		flex-direction: column;
+		gap: 2rem;
+	}
+
+	#login-form {
 		display: flex;
 		margin: 0;
-		width: 820px;
+		width: 460px;
+		height: auto;
 		flex-direction: column;
-		justify-content: center;
+		justify-content: space-between;
 		align-items: center;
-		margin-top: 0.5em;
 		background-color: #353535;
 		border-radius: 6px;
-		padding: 1.5em 2em 1.5em 2em;
+		padding: 1rem 1.5rem 1rem 1.5rem;
+		font-size: 18px;
 	}
 
-	#badline-form input {
-		max-width: 820px;
-		margin-top: 0.5em;
-		padding: 0.75em;
-		border: 0.1em solid #757575;
-		border-radius: 4px;
+	#login-form input {
+		max-width: 460px;
+		max-height: 3rem;
+		height: 100%;
+		margin-top: 0.5rem;
+		padding: 0.75rem;
+		border: 1px solid #757575;
+		border-radius: 6px;
 		background-color: #505050 !important;
+		font-size: 14px;
 	}
 
-	#badline-form textarea {
-		resize: none;
-		width: 100%;
-		height: 200px;
-		padding: 0.75em;
-		margin-top: 0.5em;
-		border: 0.1em solid #757575;
-		border-radius: 4px;
-		background-color: #505050;
-	}
-
-	#badline-form select {
+	#login-form select {
 		appearance: none;
 		-webkit-appearance: none;
 		-moz-appearance: none;
 		-ms-appearance: none;
-		max-width: 820px;
-		margin-top: 0.5em;
-		padding: 0.75em;
-		border: 0.1em solid #757575;
+		max-width: 460px;
+		margin-top: 0.5rem;
+		padding: 0.75rem;
+		border: 1px solid #757575;
 		background-color: #505050 !important;
-		border-radius: 4px;
+		border-radius: 6px;
 	}
 
-	#badline-form button {
-		max-width: 820px;
-		height: 3em;
+	#login-form button {
+		max-width: 460px;
+		height: 3rem;
 		width: 100%;
-		margin-top: 1em;
+		margin-top: 3rem;
 		background-color: #C70E00;;
 		border: none;
+		border-radius: 6px;
+		font-size: 24px;
 	}
 
-	#badline-form select:focus,
-	#badline-form textarea:focus,
-	#badline-form input:focus {
+	#login-form label {
+		height: 25px;
+	}
+
+	#login-form select:focus,
+	#login-form textarea:focus,
+	#login-form input:focus {
 		border-color: #C70E00;
 	}
 
-	#badline-form button:hover {
+	#login-form button:hover {
 		background-color: #C70E00;
 	}
 
-	#badline-form button:active {
+	#login-form button:active {
 		background-color:#D70E00;
 	}
 
-	#badline-form button:focus {
-		border: 0.1em solid #D70E00;
+	#login-form button:focus {
+		border: 1px solid #D70E00;
 	}
 
-	#badline-form .form-group {
+	#login-form .form-group {
 		display: flex;
 		width: 100%;
 		flex-direction: column;
@@ -119,11 +127,32 @@ export default {
 		align-items: flex-start;
 	}
 
-	#badline-form .form-element {
+	#login-form .form-element {
 		display: flex;
 		min-width: 100%;
 		flex-direction: column;
 		justify-content: space-between;
-		margin-top: 0.5em;
+		margin-top: 0.5rem;
+	}
+
+	#login-form > .form-group > :first-child {
+		margin-top: 0;
+	}
+
+	#loginform-register-container {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		width: 460px;
+		height: 4rem;
+		border: 1px solid #303030;
+		border-radius: 6px;
+		font-size: 0.75rem;
+	}
+
+	#loginform-register-container a {
+		color: #AAAAAA;
+		text-decoration: none;
+		margin-left: 0.75rem;
 	}
 </style>

@@ -69,18 +69,4 @@ export default {
 	margin-top: 1em;
 	margin-bottom: 1em;
   }
-
-  .aap-red {
-	color: #C70E00;
-	font-weight: normal;
-  }
-
-  .aap-wt-light {
-	font-weight: normal;
-  }
-
-  .aap-wt-semibold {
-	font-weight: 600;
-  }
-
 </style>

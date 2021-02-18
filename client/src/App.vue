@@ -22,6 +22,7 @@ export default {
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+@import url('../public/css/AAPGlobal.css');
 
 * {
 	font-family: 'Poppins', sans-serif;
@@ -34,11 +35,5 @@ export default {
 	align-items: center;
 	flex-direction: column;
 	height: 100vh;
-}
-
-#navigation-main {
-}
-
-#footer-main {
 }
 </style>

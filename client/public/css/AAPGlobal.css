@@ -1,0 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+* {
+    font-family: 'Poppins', sans-serif;
+    background-color: #252525;
+}
+
+/* Colours */
+
+.aap-red {
+    color: #C70E00;
+}
+
+/* Font Sizes */
+.aap-sz-24 {
+    font-size: 24px;
+}
+
+.aap-sz-28 {
+    font-size: 28px;
+}
+
+/* Font Weights */
+
+.aap-wt-normal {
+    font-weight: normal;
+}
+
+.aap-wt-light {
+    font-weight: normal;
+}
+
+.aap-wt-semibold {
+    font-weight: 600;
+}
+
+/* Font Transforms */
+
+.aap-tr-up {
+    text-transform: uppercase;
+}
+
+/* Font Mixed Styles */
+
+.aap-st-passwd {
+    font-family: 'Verdana', sans-serif;
+}
