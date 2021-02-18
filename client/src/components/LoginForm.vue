@@ -8,7 +8,10 @@
 					<input type="text" id="show">
 				</div>
 				<div class="form-element">
-					<label for="character_name">Password</label>
+					<div>
+						<label for="character_name">Password</label>
+						<a href="#">Forgot password?</a>
+					</div>
 					<input type="password" id="character_name">
 				</div>
 			</div>
@@ -133,6 +136,19 @@ export default {
 		flex-direction: column;
 		justify-content: space-between;
 		margin-top: 0.5rem;
+	}
+
+	#login-form .form-element div {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		flex-direction: row;
+	}
+
+	#login-form .form-element div > a {
+		font-size: 0.75rem;
+		text-decoration: none;
+		color: #AAAAAA;
 	}
 
 	#login-form > .form-group > :first-child {
