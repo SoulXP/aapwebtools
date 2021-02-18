@@ -22,20 +22,26 @@
 
 <script>
 import services from '@/services/services.js';
+import { ref } from 'vue';
 
 export default {
 	name: 'BadLineForm',
-	data () {
+	setup () {
+		const showNames = ref([
+			'One',
+			'Two',
+			'Three'
+		]);
+		const characterName = ref('');
+		const line = ref('');
+
 		return {
-			showNames: [
-				'One',
-				'Two',
-				'Three'
-			],
-			characterName: '',
-			line: ''
+			showNames,
+			characterName,
+			line
 		}
 	},
+
 	methods: {
 		validateForm () {
 			// Send to api for logging
@@ -57,6 +63,39 @@ export default {
 				});
 		}
 	}
+
+// 	data () {
+// 		return {
+// 			showNames: [
+// 				'One',
+// 				'Two',
+// 				'Three'
+// 			],
+// 			characterName: '',
+// 			line: ''
+// 		}
+// 	},
+// 	methods: {
+// 		validateForm () {
+// 			// Send to api for logging
+// 			services.addBadLine({ type: 'badline-form', formdata: { show: this.showName, character: this.characterName, line: this.line } })
+// 				.then((res) => {
+// 					console.log(res);
+// 				})
+// 				.catch((err) => {
+// 					console.log(err);
+// 				});
+// 		},
+// 		sendPost (formData) {
+// 			services.dev_get()
+// 				.then((res) => {
+// 					console.log(res.data);
+// 				})
+// 				.catch((err) => {
+// 					console.error(err);
+// 				});
+// 		}
+// 	}
 }
 </script>
 
