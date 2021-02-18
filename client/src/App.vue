@@ -6,7 +6,10 @@
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 
   * {
-      font-family: 'Poppins', sans-serif;
-      color: #EEEEEE;
+		font-family: 'Poppins', sans-serif;
+		color: #EEEEEE;
+		position: absolute;
+		top: 0;
+		left: 0;
   }
 </style>

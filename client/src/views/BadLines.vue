@@ -1,5 +1,5 @@
 <template>
-<div>
+<div id="badlines-view">
   <Navigation class="navigation-main"/>
   <div id="badlines-container">
     <div id="badlines-main">
@@ -45,12 +45,16 @@ export default {
     font-size: 3em;
   }
 
+  #badlines-view {
+	width: 100vw;
+  }
+
   #badlines-container {
     display: flex;
-    width: 100vw;
-    height: 100vh;
     justify-content: center;
     align-items: center;
+	margin-top: 3em;
+	margin-bottom: 3em;
   }
 
   #badlines-main {

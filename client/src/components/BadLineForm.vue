@@ -89,7 +89,7 @@ export default {
         padding: 0.75em;
         border: 0.1em solid #757575;
         border-radius: 4px;
-        background-color: #505050;
+        background-color: #505050 !important;
     }
 
     #badline-form textarea {
@@ -112,7 +112,7 @@ export default {
         margin-top: 0.5em;
         padding: 0.75em;
         border: 0.1em solid #757575;
-        background-color: #505050;
+        background-color: #505050 !important;
         border-radius: 4px;
     }
 
@@ -125,7 +125,9 @@ export default {
         border: none;
     }
 
-    #badline-form select:focus, #badline-form textarea:focus, #badline-form input:focus {
+    #badline-form select:focus,
+	#badline-form textarea:focus,
+	#badline-form input:focus {
         border-color: #C70E00;
     }
 

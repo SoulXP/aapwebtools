@@ -38,7 +38,6 @@ export default {
     display: flex;
     justify-content: center;
     align-items: center;
-    position: absolute;
     width: 100vw;
     height: 4.5em;
     left: 0;
