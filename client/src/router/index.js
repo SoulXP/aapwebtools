@@ -3,9 +3,9 @@ import BadLines from '../views/BadLines.vue';
 
 const routes = [
   {
-    path: '/',
-    name: 'BadLines',
-    component: BadLines
+	path: '/',
+	name: 'BadLines',
+	component: BadLines
   }
 ];
 
