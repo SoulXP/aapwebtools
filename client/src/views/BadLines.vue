@@ -1,6 +1,6 @@
 <template>
 <div id="badlines-view">
-  <Navigation class="navigation-main"/>
+  <!-- <Navigation class="navigation-main"/> -->
   <div id="badlines-container">
 	<div id="badlines-main">
 		<h1 class="aap-wt-semibold"><span class="aap-red aap-wt-light">AFRICA</span> Audio Post.</h1>
@@ -15,22 +15,23 @@
 </template>
 
 <script>
-import Navigation from '@/components/Navigation.vue';
+// import Navigation from '@/components/Navigation.vue';
 import UserDataForm from '@/components/UserDataForm.vue';
 import BadLineForm from '@/components/BadLineForm.vue';
 
 export default {
-  name: 'Landing',
   data () {
 	return {
 		userLoggedIn: true
 	}
   },
   components: {
-	Navigation,
+	// Navigation,
 	UserDataForm,
 	BadLineForm
-  }
+  },
+
+  name: 'BadLines'
 }
 </script>
 

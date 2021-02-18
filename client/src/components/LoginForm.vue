@@ -25,45 +25,7 @@ import services from '@/services/services.js';
 import { ref } from 'vue';
 
 export default {
-	setup () {
-		const showNames = ref([
-			'One',
-			'Two',
-			'Three'
-		]);
-		const characterName = ref('');
-		const line = ref('');
-
-		return {
-			showNames,
-			characterName,
-			line
-		}
-	},
-
-	name: 'BadLineForm',
-	methods: {
-		validateForm () {
-			// Send to api for logging
-			services.addBadLine({ type: 'badline-form', formdata: { show: this.showName, character: this.characterName, line: this.line } })
-				.then((res) => {
-					console.log(res);
-				})
-				.catch((err) => {
-					console.log(err);
-				});
-		},
-		sendPost (formData) {
-			services.dev_get()
-				.then((res) => {
-					console.log(res.data);
-				})
-				.catch((err) => {
-					console.error(err);
-				});
-		}
-	}
-}
+	name: 'LoginForm'
 </script>
 
 <style scoped>
