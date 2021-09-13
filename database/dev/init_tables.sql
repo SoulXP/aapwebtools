@@ -1,5 +1,7 @@
 -- Start database with clean slate
 DROP TABLE IF EXISTS tbl_webplatform_users;
+DROP TABLE IF EXISTS tbl_dubbing_raw_ptxedl;
+DROP TABLE IF EXISTS tbl_dubbing_raw_edicuesummary;
 
 -- Information on users for the web platform 
 CREATE TABLE tbl_webplatform_users (
@@ -29,7 +31,7 @@ CREATE TABLE tbl_dubbing_raw_ptxedl (
 );
 
 -- File information of dubbing EDICue ADR Summary files on storage
-CREATE TABLE tbl_dubbing_raw_ptxedl (
+CREATE TABLE tbl_dubbing_raw_edicuesummary (
     id                              bigserial                       UNIQUE NOT NULL                             PRIMARY KEY,
     ptxedl_id                       bigint                          NOT NULL                                    REFERENCES tbl_dubbing_raw_ptxedl (id),
     vers                            varchar(256)                    NOT NULL,
