@@ -1,9 +1,10 @@
 -- Start database with clean slate
-DROP TABLE IF EXISTS tbl_webplatform_users;
-DROP TABLE IF EXISTS tbl_dubbing_raw_ptxedl;
-DROP TABLE IF EXISTS tbl_dubbing_raw_edicuesummary;
-DROP TYPE IF EXISTS enum_gender;
-DROP TYPE IF EXISTS enum_dubbing_project_type;
+DROP TABLE IF EXISTS tbl_webplatform_users CASCADE;
+DROP TABLE IF EXISTS tbl_dubbing_raw_ptxedl CASCADE;
+DROP TABLE IF EXISTS tbl_dubbing_raw_edicuesummary CASCADE;
+DROP TABLE IF EXISTS tbl_dubbing_projects CASCADE;
+DROP TYPE IF EXISTS enum_gender CASCADE;
+DROP TYPE IF EXISTS enum_dubbing_project_type CASCADE;
 
 -- Enumeration types
 CREATE TYPE enum_gender AS ENUM ( 'male', 'female', 'unspecified' );
@@ -53,10 +54,7 @@ CREATE TABLE tbl_dubbing_raw_edicuesummary (
 -- Data of different dubbing projects
 CREATE TABLE tbl_dubbing_projects (
     id                              bigserial                       UNIQUE NOT NULL                             PRIMARY KEY,
-
     adrsummary_ids                  bigint[]                        NOT NULL,
-        FOREIGN KEY (EACH ELEMENT OF adrsummary_ids) REFERENCES tbl_dubbing_raw_edicuesummary,
-
     project_type                    enum_dubbing_project_type       NOT NULL,
     identifier_internal             varchar(16)                     UNIQUE NOT NULL,
     title_internal                  varchar(256)                    UNIQUE NOT NULL,
