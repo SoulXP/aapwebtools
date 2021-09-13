@@ -2,6 +2,12 @@
 DROP TABLE IF EXISTS tbl_webplatform_users;
 DROP TABLE IF EXISTS tbl_dubbing_raw_ptxedl;
 DROP TABLE IF EXISTS tbl_dubbing_raw_edicuesummary;
+DROP TYPE IF EXISTS enum_gender;
+DROP TYPE IF EXISTS enum_dubbing_project_type;
+
+-- Enumeration types
+CREATE TYPE enum_gender AS ENUM ( 'male', 'female', 'unspecified' );
+CREATE TYPE enum_dubbing_project_type AS ENUM ( 'serial',  'film' );
 
 -- Information on users for the web platform 
 CREATE TABLE tbl_webplatform_users (
@@ -42,4 +48,18 @@ CREATE TABLE tbl_dubbing_raw_edicuesummary (
     timestamp_file_creation         timestamp WITH TIME ZONE        NOT NULL,
     timestamp_file_modified         timestamp WITH TIME ZONE        NOT NULL,
     timestamp_entry                 timestamp WITH TIME ZONE        NOT NULL                DEFAULT NOW()
+);
+
+-- Data of different dubbing projects
+CREATE TABLE tbl_dubbing_projects (
+    id                              bigserial                       UNIQUE NOT NULL                             PRIMARY KEY,
+
+    adrsummary_ids                  bigint[]                        NOT NULL,
+        FOREIGN KEY (EACH ELEMENT OF adrsummary_ids) REFERENCES tbl_dubbing_raw_edicuesummary,
+
+    project_type                    enum_dubbing_project_type       NOT NULL,
+    identifier_internal             varchar(16)                     UNIQUE NOT NULL,
+    title_internal                  varchar(256)                    UNIQUE NOT NULL,
+    title_external                  varchar(256)                    NOT NULL                DEFAULT 'unspecified',
+    timestamp_entry                 timestamp WITH TIME ZONE        DEFAULT NOW()
 );
