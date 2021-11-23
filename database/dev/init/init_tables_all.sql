@@ -24,7 +24,7 @@ CREATE TABLE tbl_webplatform_users (
     email_verification_guid         uuid                            UNIQUE,
     timestamp_verification_sent     timestamp WITH TIME ZONE,
     timestamp_verified              timestamp WITH TIME ZONE,
-    timestamp_entry                 timestamp WITH TIME ZONE        DEFAULT NOW()
+    timestamp_entry                 timestamp WITH TIME ZONE                                DEFAULT NOW()
 );
 
 -- File information of dubbing PTX EDL files on storage
@@ -43,7 +43,7 @@ CREATE TABLE tbl_dubbing_raw_ptxedl (
 -- File information of dubbing EDICue ADR Summary files on storage
 CREATE TABLE tbl_dubbing_raw_edicuesummary (
     id                              bigserial                       UNIQUE NOT NULL                                             PRIMARY KEY,
-    ptxedl_id                       bigint                          NOT NULL                                                    REFERENCES tbl_dubbing_raw_ptxedl (id),
+    ptxedl_id                       bigint                          NOT NULL,
     vers                            varchar(256)                    NOT NULL,
     size                            bigint                          NOT NULL,
     file_path                       text                            UNIQUE NOT NULL,
@@ -51,7 +51,8 @@ CREATE TABLE tbl_dubbing_raw_edicuesummary (
     file_hash_sha512                varchar(128)                    UNIQUE NOT NULL,
     timestamp_file_creation         timestamp WITH TIME ZONE        NOT NULL,
     timestamp_file_modified         timestamp WITH TIME ZONE        NOT NULL,
-    timestamp_entry                 timestamp WITH TIME ZONE        NOT NULL                DEFAULT NOW()
+    timestamp_entry                 timestamp WITH TIME ZONE        NOT NULL                DEFAULT NOW(),
+    CONSTRAINT fk_ptxedl            FOREIGN KEY(ptxedl_id)          REFERENCES tbl_dubbing_raw_ptxedl(id)
 );
 
 -- Data of different dubbing projects
@@ -68,35 +69,43 @@ CREATE TABLE tbl_dubbing_projects (
 -- Dubbing project segmentation details
 CREATE TABLE tbl_dubbing_project_segments (
     id                              bigserial                       UNIQUE NOT NULL                                             PRIMARY KEY,
-    project_id                      bigint                          NOT NULL                                                    REFERENCES tbl_dubbing_projects (id),
-    adrsummary_id                   bigint                          NOT NULL                                                    REFERENCES tbl_dubbing_raw_edicuesummary (id),
+    project_id                      bigint                          NOT NULL,
+    adrsummary_id                   bigint                          NOT NULL,
     segment_id_internal             varchar(256)                    NOT NULL, 
     segment_id_external             varchar(256)                    NOT NULL                DEFAULT 'unspecified',
     content_document_name           text                            UNIQUE NOT NULL,
     content_document_hash_sha512    varchar(128)                    UNIQUE NOT NULL,
-    timestamp_entry                 timestamp WITH TIME ZONE        DEFAULT NOW()
+    timestamp_entry                 timestamp WITH TIME ZONE                                DEFAULT NOW(),
+    CONSTRAINT fk_project           FOREIGN KEY(project_id)         REFERENCES tbl_dubbing_projects(id),
+    CONSTRAINT fk_adrsummary        FOREIGN KEY(adrsummary_id)      REFERENCES tbl_dubbing_raw_edicuesummary(id)
 );
 
 -- Dubbing project segmentation details
 CREATE TABLE tbl_dubbing_characters (
     id                              bigserial                       UNIQUE NOT NULL                                             PRIMARY KEY,
-    project_id                      bigint                          NOT NULL                                                    REFERENCES tbl_dubbing_projects (id),
-    adrsummary_id                   bigint                          NOT NULL                                                    REFERENCES tbl_dubbing_raw_edicuesummary (id),
+    project_id                      bigint                          NOT NULL,
+    adrsummary_id                   bigint                          NOT NULL,
     internal_name                   varchar(128)                    NOT NULL, 
     aliases                         varchar(128)[128]               NOT NULL                DEFAULT array[128]::varchar[128],
     gender                          enum_dubbing_gender             NOT NULL,
     age_range                       bigint[2]                                               DEFAULT array[2]::bigint[],
-    timestamp_entry                 timestamp WITH TIME ZONE        DEFAULT NOW()
+    timestamp_entry                 timestamp WITH TIME ZONE                                DEFAULT NOW(),
+    CONSTRAINT fk_project           FOREIGN KEY(project_id)         REFERENCES tbl_dubbing_projects(id),
+    CONSTRAINT fk_adrsummary        FOREIGN KEY(adrsummary_id)      REFERENCES tbl_dubbing_raw_edicuesummary(id)
 );
 
 -- Dubbing cue data for each project segment
 CREATE TABLE tbl_dubbing_cues (
     id                              bigserial                       UNIQUE NOT NULL                                             PRIMARY KEY,
-    project_id                      bigint                          NOT NULL                                                    REFERENCES tbl_dubbing_projects (id),
-    project_segment_id              bigint                          NOT NULL                                                    REFERENCES tbl_dubbing_project_segments (id),
-    adrsummary_id                   bigint                          NOT NULL                                                    REFERENCES tbl_dubbing_raw_edicuesummary (id),
-    character_id                    bigint                          NOT NULL                                                    REFERENCES tbl_dubbing_characters (id),
+    project_id                      bigint                          NOT NULL,
+    project_segment_id              bigint                          NOT NULL,
+    adrsummary_id                   bigint                          NOT NULL,
+    character_id                    bigint                          NOT NULL,
     prepared_cue                    text                            NOT NULL, 
     timeline_values                 bigint[2]                       NOT NULL                DEFAULT array[2]::bigint[],
-    timestamp_entry                 timestamp WITH TIME ZONE        DEFAULT NOW()
+    timestamp_entry                 timestamp WITH TIME ZONE        DEFAULT NOW(),
+    CONSTRAINT fk_project           FOREIGN KEY(project_id)         REFERENCES tbl_dubbing_projects (id),
+    CONSTRAINT fk_project_segment   FOREIGN KEY(project_segment_id) REFERENCES tbl_dubbing_project_segments (id),
+    CONSTRAINT fk_adrsummary        FOREIGN KEY(adrsummary_id)      REFERENCES tbl_dubbing_raw_edicuesummary (id),
+    CONSTRAINT fk_character         FOREIGN KEY(character_id)       REFERENCES tbl_dubbing_characters (id)
 );
