@@ -30,3 +30,6 @@ pnpm-debug.log*
 *.sw?
 **/.eslintrc.js
 **/.eslintrc.json
+
+# SQL files
+database/dev/resources
