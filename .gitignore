@@ -31,5 +31,11 @@ pnpm-debug.log*
 **/.eslintrc.js
 **/.eslintrc.json
 
+# Resource files
+resources
+
 # SQL files
 database/dev/resources
+
+# Python files
+__pycache__
