@@ -39,3 +39,6 @@ database/dev/resources
 
 # Python files
 __pycache__
+
+# Log files
+logs

@@ -2,10 +2,15 @@
 
 import os
 import re
+import argparse
+import datetime
 import postgresql.driver as pg
 
-# TODO: User input
 # TODO: Error handling for arguments parsing
+# Input arguments
+parser = argparse.ArgumentParser(description='prepares EDL data for database insertion')
+parser.add_argument('--path', '-f', required=True, help='path containing EDL data files', nargs='+', dest='path', metavar='<path>')
+args = vars(parser.parse_args())
 
 # TODO: Error handling for bad tc string
 def tc_to_float(tc, frame_rate):
@@ -18,40 +23,65 @@ def tc_to_float(tc, frame_rate):
     return (h + m + s + f) * 10000000.0 # Create a precision constant for this
 
 # Helper functions
-def cuedata_from_file(path, production=''):
+def cuedata_from_file(path, format='db', production=''):
     # TODO: Error checking for path before opening
     entries = []
     prod_name = prod_id = ep = character = cue = ''
     age_lo = age_hi = tc_in = tc_out = 0
+    frame_rate = 25 # TODO: Default to 0 and handle if not found in EDL
+
 
     with open(path, 'r') as f:
         lines = f.readlines()
-        for line in lines:
-            fields = [s.strip() for s in line.split(sep='\t')]
 
-            # TODO: Error checking on anomalies/fault txt files
-            for i in range(5):
-                if i == 0:
-                    prod_id, ep = [s.strip() for s in fields[0].split(sep=' ')]
-                elif i == 1:
-                    character, _, age_range = [s.strip() for s in fields[1].split(sep=' ')]
-                    ages = age_range.split(sep='-')
-                    age_lo = int(ages[0].strip()[2:])
-                    age_hi = int(ages[1].strip()[:-1])
-                elif i == 2:
-                    _, _, tc_in_ = [s.strip() for s in fields[2].split(sep=' ')]
-                    tc_in = tc_to_float(tc_in_, 25) # TODO: Accomodate for different frame rates
-                elif i == 3:
-                    _, _, tc_out_ = [s.strip() for s in fields[3].split(sep=' ')]
-                    tc_out = tc_to_float(tc_out_, 25) # TODO: Accomodate for different frame rates
-                elif i == 4:\
-                    # TODO: Escape special characters
-                    cue = fields[4].strip().replace("'", "''")
+        if format == 'table':
+            for line in lines:
+                fields = [s.strip() for s in line.split(sep='\t')]
+
+                # TODO: Error checking on anomalies/fault txt files
+                for i in range(5):
+                    if i == 0:
+                        prod_id, ep = [s.strip() for s in fields[0].split(sep=' ')]
+                    elif i == 1:
+                        character, _, age_range = [s.strip().replace("'", "''") for s in fields[1].split(sep=' ')]
+                        ages = age_range.split(sep='-')
+                        age_lo = int(ages[0].strip()[2:])
+                        age_hi = int(ages[1].strip()[:-1])
+                    elif i == 2:
+                        _, _, tc_in_ = [s.strip() for s in fields[2].split(sep=' ')]
+                        tc_in = tc_to_float(tc_in_, frame_rate) # TODO: Accomodate for different frame rates
+                    elif i == 3:
+                        _, _, tc_out_ = [s.strip() for s in fields[3].split(sep=' ')]
+                        tc_out = tc_to_float(tc_out_, frame_rate) # TODO: Accomodate for different frame rates
+                    elif i == 4:\
+                        # TODO: Escape special characters
+                        cue = fields[4].strip().replace("'", "''")
 
 
-                entry = { 'prod': production, 'code': prod_id, 'ep': ep, 'character': character, 'line': cue, 'age': [age_lo, age_hi], 'tc': [tc_in, tc_out] }
+                    entry = { 'prod': production, 'code': prod_id, 'ep': ep, 'character': character, 'line': cue, 'age': [age_lo, age_hi], 'tc': [tc_in, tc_out], 'framerate': frame_rate }
 
-            entries.append(entry)
+                entries.append(entry)
+
+        elif format == 'db':
+            for line in lines:
+                fields = [s for s in line.split(sep='&&')]
+                
+                prod_name = fields[0].strip()
+                prod_id = fields[1].strip()
+                ep = fields[2].strip()
+                character = fields[3].strip().replace("'", "''")
+                frame_rate = float(fields[6].strip())
+                tc_in = tc_to_float(fields[4].strip(), frame_rate)
+                tc_out = tc_to_float(fields[5].strip(), frame_rate)
+                age_lo = int(fields[7].strip())
+                age_hi = int(fields[8].strip())
+                cue = fields[9].strip().replace("'", "''")
+
+                entry = { 'prod': prod_name, 'code': prod_id, 'ep': ep, 'character': character, 'line': cue, 'age': [age_lo, age_hi], 'tc': [tc_in, tc_out], 'framerate': frame_rate }
+                entries.append(entry)
+        else:
+            raise Exception('please pass a valid format type to parse cue data')
+
 
     return entries
 
@@ -69,9 +99,12 @@ def prepare_insertion(data):
                 v = '\'' + str(d[k]) + '\''
 
             elif k == 'age' or k == 'tc':
-                tc_in = str(d[k][0])
-                tc_out = str(d[k][1])
-                v = f'ARRAY [{tc_in}, {tc_out}]'
+                lo = str(d[k][0])
+                hi = str(d[k][1])
+                v = f'ARRAY [{lo}, {hi}]'
+
+            elif k == 'framerate':
+                v = str(d[k])
 
             if j < len(d) - 1:
                 value = value + v + ', '
@@ -86,37 +119,66 @@ def prepare_insertion(data):
         i = i + 1
         j = 0
         
-    return f'INSERT INTO tbl_dubbing_cues_monolithic(project_name, project_identifier, project_segment, character_name, prepared_cue, age_range, timeline_values) VALUES {entry}'
+    return f'INSERT INTO tbl_dubbing_cues_monolithic(project_name, project_identifier, project_segment, character_name, prepared_cue, age_range, timeline_values, frame_rate) VALUES {entry}'
 
-# Prepare database login
-# TODO: Defaults if environment is not configured
-try:
-    db_env = {
-        'database': os.getenv(key='AWTDBNAME_DEV'),
-        'host': os.getenv(key='AWTDBHOST_DEV'),
-        'port': os.getenv(key='AWTDBPORT_DEV'),
-        'user': os.getenv(key='AWTDBUSER_DEV'),
-        'password': os.getenv(key='AWTDBPASS_DEV')
-    }
-except Exception as e:
-    print(e)
 
-# Establish connection to database
-db = pg.connect(
-    database = db_env['database'],
-    host = db_env['host'],
-    port = db_env['port'],
-    user = db_env['user'],
-    password = db_env['password']
-)
+def main():
+    # TODO: Defaults if environment is not configured
+    try:
+        # Fetch environment variables
+        enable_logging = True
+        log_path = os.getenv(key='AWTLOGPATH_DEV')
+        if log_path == '': enable_logging = False
 
-# Get cue data
-path = '/Users/stefan/dev/projects/aapwebtools/database/dev/data/resources/oscar.txt'
-data = cuedata_from_file(path, 'THE PIER')
-query = prepare_insertion(data)
-# print(query)
+        db_env = {
+            'database': os.getenv(key='AWTDBNAME_DEV'),
+            'host': os.getenv(key='AWTDBHOST_DEV'),
+            'port': os.getenv(key='AWTDBPORT_DEV'),
+            'user': os.getenv(key='AWTDBUSER_DEV'),
+            'password': os.getenv(key='AWTDBPASS_DEV')
+        }
 
-# Insert into database
-ps = db.prepare(prepare_insertion(data))
-results = ps()
-print(results)
+        # Establish connection to database
+        db = pg.connect(
+            database = db_env['database'],
+            host = db_env['host'],
+            port = db_env['port'],
+            user = db_env['user'],
+            password = db_env['password']
+        )
+
+    except Exception as e:
+        print(e)
+
+    # Prepare data and insert into database
+    try:
+        for p in args['path']:
+            # Handle single files
+            if os.path.isfile(p):
+                data = cuedata_from_file(p, format='db')
+                ps = db.prepare(prepare_insertion(data))
+                results = ps()
+            # Handle directory
+            elif os.path.isdir(p):
+                files = os.listdir(p)
+                for f in files:
+                    try:
+                        data = cuedata_from_file(f'{p}/{f}', format='db')
+                        ps = db.prepare(prepare_insertion(data))
+                        results = ps()
+
+                    except Exception as e:
+                        print(e)
+
+            else:
+                raise Exception('options specified in path variable is neither a file nor directory')
+
+    except Exception as e:
+        if enable_logging:
+            t = datetime.datetime.now().strftime('%m%d%Y_%H%M%S')
+
+            with open(f'{log_path}/preparedata_{t}.log', 'w') as f:
+                f.write(str(e))
+                f.close()
+
+if __name__ == '__main__': main()
