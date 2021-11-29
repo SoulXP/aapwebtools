@@ -9,7 +9,7 @@ import postgresql.driver as pg
 # TODO: Error handling for arguments parsing
 # Input arguments
 parser = argparse.ArgumentParser(description='prepares EDL data for database insertion')
-parser.add_argument('--path', '-f', required=True, help='path containing EDL data files', nargs='+', dest='path', metavar='<path>')
+parser.add_argument('--path', '-p', required=True, help='path containing EDL data files', nargs='+', dest='path', metavar='<path>')
 args = vars(parser.parse_args())
 
 # TODO: Error handling for bad tc string
@@ -26,7 +26,7 @@ def tc_to_float(tc, frame_rate):
 def cuedata_from_file(path, format='db', production=''):
     # TODO: Error checking for path before opening
     entries = []
-    prod_name = prod_id = ep = character = cue = ''
+    prod_name = prod_id = catalgoue = ep = character = cue = ''
     age_lo = age_hi = tc_in = tc_out = 0
     frame_rate = 25 # TODO: Default to 0 and handle if not found in EDL
 
@@ -58,7 +58,7 @@ def cuedata_from_file(path, format='db', production=''):
                         cue = fields[4].strip().replace("'", "''")
 
 
-                    entry = { 'prod': production, 'code': prod_id, 'ep': ep, 'character': character, 'line': cue, 'age': [age_lo, age_hi], 'tc': [tc_in, tc_out], 'framerate': frame_rate }
+                    entry = { 'prod': production, 'code': prod_id, 'catalogue': 'MONOLITH', 'ep': ep, 'character': character, 'line': cue, 'age': [age_lo, age_hi], 'tc': [tc_in, tc_out], 'framerate': frame_rate }
 
                 entries.append(entry)
 
@@ -68,16 +68,17 @@ def cuedata_from_file(path, format='db', production=''):
                 
                 prod_name = fields[0].strip()
                 prod_id = fields[1].strip()
-                ep = fields[2].strip()
-                character = fields[3].strip().replace("'", "''")
-                frame_rate = float(fields[6].strip())
-                tc_in = tc_to_float(fields[4].strip(), frame_rate)
-                tc_out = tc_to_float(fields[5].strip(), frame_rate)
-                age_lo = int(fields[7].strip())
-                age_hi = int(fields[8].strip())
-                cue = fields[9].strip().replace("'", "''")
+                catalogue = fields[2]
+                ep = fields[3].strip()
+                character = fields[4].strip().replace("'", "''")
+                frame_rate = float(fields[7].strip())
+                tc_in = tc_to_float(fields[5].strip(), frame_rate)
+                tc_out = tc_to_float(fields[6].strip(), frame_rate)
+                age_lo = int(fields[8].strip())
+                age_hi = int(fields[9].strip())
+                cue = fields[10].strip().replace("'", "''")
 
-                entry = { 'prod': prod_name, 'code': prod_id, 'ep': ep, 'character': character, 'line': cue, 'age': [age_lo, age_hi], 'tc': [tc_in, tc_out], 'framerate': frame_rate }
+                entry = { 'prod': prod_name, 'code': prod_id, 'catalogue': catalogue, 'ep': ep, 'character': character, 'line': cue, 'age': [age_lo, age_hi], 'tc': [tc_in, tc_out], 'framerate': frame_rate }
                 entries.append(entry)
         else:
             raise Exception('please pass a valid format type to parse cue data')
@@ -95,7 +96,7 @@ def prepare_insertion(data):
         for k in d:
             v = ''
 
-            if k == 'prod' or k == 'code' or k == 'ep' or k == 'character' or k == 'line':
+            if k == 'prod' or k == 'code' or k == 'ep' or k == 'character' or k == 'line' or k == 'catalogue':
                 v = '\'' + str(d[k]) + '\''
 
             elif k == 'age' or k == 'tc':
@@ -119,7 +120,7 @@ def prepare_insertion(data):
         i = i + 1
         j = 0
         
-    return f'INSERT INTO tbl_dubbing_cues_monolithic(project_name, project_identifier, project_segment, character_name, prepared_cue, age_range, timeline_values, frame_rate) VALUES {entry}'
+    return f'INSERT INTO tbl_dubbing_cues_monolithic(project_name, project_identifier, project_catalogue, project_segment, character_name, prepared_cue, age_range, timeline_values, frame_rate) VALUES {entry}'
 
 
 def main():
@@ -178,6 +179,7 @@ def main():
             t = datetime.datetime.now().strftime('%m%d%Y_%H%M%S')
 
             with open(f'{log_path}/preparedata_{t}.log', 'w') as f:
+                print('ERROR: please check local log files for a detailed description')
                 f.write(str(e))
                 f.close()
 

@@ -6,6 +6,7 @@ CREATE TABLE tbl_dubbing_cues_monolithic (
     id                              bigserial                       UNIQUE NOT NULL                                             PRIMARY KEY,
     project_name                    varchar(200)                    NOT NULL,
     project_identifier              varchar(10)                     NOT NULL,
+    project_catalogue               varchar(10)                     NOT NULL,
     project_segment                 varchar(10)                     NOT NULL,
     character_name                  varchar(100)                    NOT NULL,
     prepared_cue                    text                            NOT NULL, 

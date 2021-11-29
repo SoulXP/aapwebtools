@@ -9,6 +9,7 @@ vetur.config.js
 jsconfig.json
 
 # local env files
+env
 .env
 *.env
 .env.local
