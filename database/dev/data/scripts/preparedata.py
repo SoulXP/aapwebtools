@@ -148,11 +148,7 @@ def main():
             password = db_env['password']
         )
 
-    except Exception as e:
-        print(e)
-
-    # Prepare data and insert into database
-    try:
+        # Prepare data and insert into database
         for p in args['path']:
             # Handle single files
             if os.path.isfile(p):
@@ -163,13 +159,9 @@ def main():
             elif os.path.isdir(p):
                 files = os.listdir(p)
                 for f in files:
-                    try:
-                        data = cuedata_from_file(f'{p}/{f}', format='db')
-                        ps = db.prepare(prepare_insertion(data))
-                        results = ps()
-
-                    except Exception as e:
-                        print(e)
+                    data = cuedata_from_file(f'{p}/{f}', format='db')
+                    ps = db.prepare(prepare_insertion(data))
+                    results = ps()
 
             else:
                 raise Exception('options specified in path variable is neither a file nor directory')
@@ -178,8 +170,10 @@ def main():
         if enable_logging:
             t = datetime.datetime.now().strftime('%m%d%Y_%H%M%S')
 
-            with open(f'{log_path}/preparedata_{t}.log', 'w') as f:
-                print('ERROR: please check local log files for a detailed description')
+            log_file = f'{log_path}/preparedata_{t}.log'
+            with open(f'{log_file}', 'w') as f:
+                print (e)
+                print(f'ERROR: a log has been saved to: {log_file}')
                 f.write(str(e))
                 f.close()
 

@@ -42,10 +42,35 @@ function float_to_tc(n, frame_rate) {
 // TODO: Create route names for various API queries
 router.get("/api", async (req, res) => {
     let q = (req.query.name).toUpperCase();
-    let results = []
+
+    let results = [];
+    let tc_in = '';
+    let tc_out = '';
+
     try {
-        const db_result = await pool.query(`SELECT id, project_name, project_identifier, project_catalogue, project_segment, character_name, age_range, timeline_values, frame_rate FROM tbl_dubbing_cues_monolithic WHERE character_name = '${q}' LIMIT 1000`);
-        results = db_result.rows;
+        const db_result = await pool.query(`SELECT project_name, project_identifier, project_catalogue, project_segment, character_name, age_range, timeline_values, frame_rate FROM tbl_dubbing_cues_monolithic WHERE character_name = 'ROHIT' OR character_name = 'SONAKSHI' LIMIT 1000`);
+
+        for (e of db_result.rows) {
+            const { project_name, project_identifier, project_catalogue, project_segment, character_name, age_range, timeline_values, frame_rate } = e;
+
+            const entry = {
+                project_name,
+                project_identifier,
+                project_catalogue,
+                project_segment,
+                character_name,
+                age_range
+            };
+
+            const timeline = [
+                float_to_tc(timeline_values[0], frame_rate),
+                float_to_tc(timeline_values[1], frame_rate)
+            ];
+
+            entry['timeline'] = timeline;
+
+            results.push(entry);
+        }
     } catch (e) {
         console.log(e);
     }

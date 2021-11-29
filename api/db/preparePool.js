@@ -10,7 +10,7 @@ const pool = new Pool ({
     port: process.env.AWTDBPORT,
     database: process.env.AWTDBNAME,
     user: process.env.AWTDBUSER,
-    passwrod: process.env.AWTDBPASS
+    password: process.env.AWTDBPASS
 });
 
 module.exports = {
