@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { pool } = require('../db/preparePool.js');
 const { stderr, stdout } = require('process');
-const { float_to_tc } = require('../src/timecode.js');
+const { float_to_tc, tc_to_float } = require('../src/timecode.js');
 
 // TODO: Load Enviroment variables
 
@@ -14,10 +14,10 @@ router.get("/api", async (req, res) => {
     let results = [];
 
     try {
-        const db_result = await pool.query(`SELECT project_name, project_identifier, project_catalogue, project_segment, character_name, age_range, timeline_values, frame_rate FROM tbl_dubbing_cues_monolithic WHERE character_name = '${q}' LIMIT 1000`);
+        const db_result = await pool.query(`SELECT project_name, project_identifier, project_catalogue, project_segment, character_name, prepared_cue, age_range, timeline_values, frame_rate FROM tbl_dubbing_cues_monolithic WHERE character_name = '${q}' LIMIT 1000`);
 
         for (e of db_result.rows) {
-            const { project_name, project_identifier, project_catalogue, project_segment, character_name, age_range, timeline_values, frame_rate } = e;
+            const { project_name, project_identifier, project_catalogue, project_segment, character_name, prepared_cue, age_range, timeline_values, frame_rate } = e;
 
             const entry = {
                 project_name,
@@ -25,6 +25,7 @@ router.get("/api", async (req, res) => {
                 project_catalogue,
                 project_segment,
                 character_name,
+                prepared_cue,
                 age_range
             };
 

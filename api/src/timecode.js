@@ -6,7 +6,6 @@ const N_RESOLUTION = MICROSECONDS;
 
 // TODO: Fix precision/rounding error for floats
 function float_to_tc(n, frame_rate) {
-
     let h = m = s = f = 0.0
     if (n >= 60.0 * 60.0 * N_RESOLUTION) {
         h = n / (60.0 * 60.0 * N_RESOLUTION);
@@ -37,11 +36,19 @@ function float_to_tc(n, frame_rate) {
 }
 
 function tc_to_float(tc, frame_rate) {
-    // TODO
-    return 0.0;
+    let h = m = s = f = 0.0
+    const chunks = tc.split(':') // TODO: Handle drop-frame with ; delimiter
+    
+    h = parseFloat(chunks[0]) * 60.0 * 60.0;
+    m = parseFloat(chunks[1]) * 60.0;
+    s = parseFloat(chunks[2]);
+    f = parseFloat(chunks[3]) / frame_rate;
+
+    return (h + m + s + f) * N_RESOLUTION;
 }
 
 // Module exports
 module.exports = {
-    float_to_tc
+    float_to_tc,
+    tc_to_float
 };
