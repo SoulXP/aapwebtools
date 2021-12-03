@@ -11,12 +11,11 @@ const dbInstance = new Sequelize ({
     database: process.env.AWTDBNAME,
     username: process.env.AWTDBUSER,
     password: process.env.AWTDBPASS,
-    options: {
-        host: process.env.AWTDBHOST,
-        port: process.env.AWTDBPORT,
-        timezone: '+02:00'
-    }
+    host: process.env.AWTDBHOST,
+    port: process.env.AWTDBPORT,
+    timezone: '+02:00'
 });
+
 
 // Initialization of CuesMonolithic model
 CuesMonolithic.init(
