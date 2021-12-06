@@ -18,7 +18,10 @@ router.post('/api', async (req, res) => {
 router.get('/api', async (req, res) => {
     // Validate client query
     const query_keys = Object.keys(req.query);
-    if (query_keys.length === 0) res.status(400).json({ msg: 'please specify a query'});
+    if (query_keys.length === 0) {
+        res.status(400).json({ msg: 'please specify a query' });
+        return;
+    }
 
     // Extract data from query
     let qry_names = [];
@@ -26,7 +29,7 @@ router.get('/api', async (req, res) => {
     let qry_projects = [];
     let qry_segments = [];
     let qry_catalogues = [];
-    let qry_lines = []; 
+    let qry_lines = [];
 
     try {
         for (k of query_keys) {
@@ -74,20 +77,19 @@ router.get('/api', async (req, res) => {
                     break;
 
                 default:
-                    console.log(`WARNING: unknown api query ${k}`);
+                    console.log(`[WARNING] ignoring unknown api query: ${k}`);
                     break;
-             }
+            }
         }
     } catch (e) {
-        console.log(`ERROR: ${e}`);
+        console.log(`[ERROR] ${e}`);
     }
-    
+
     // Sanitize client query
-    // TODO
     const qry_where = {
         [Op.or]: qry_names.map((c) => {
             return { characterName: c.toUpperCase() };
-        })
+        }),
     };
 
     // Query database
@@ -99,10 +101,13 @@ router.get('/api', async (req, res) => {
             limit: 250
         });
     } catch (e) {
-        console.log(`ERROR: ${e}`);
+        console.log(`[ERROR] ${e}`);
     }
 
-    if (qry_results.length === 0) res.status(200).json({ msg: 'none' });
+    if (qry_results.length === 0) {
+        res.status(200).json({ msg: 'none' });
+        return;
+    }
 
     // Return results of query to client
     let results = [

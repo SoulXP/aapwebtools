@@ -173,7 +173,7 @@ def main():
             log_file = f'{log_path}/preparedata_{t}.log'
             with open(f'{log_file}', 'w') as f:
                 print (e)
-                print(f'ERROR: a log has been saved to: {log_file}')
+                print(f'[ERROR] a log has been saved to: {log_file}')
                 f.write(str(e))
                 f.close()
 

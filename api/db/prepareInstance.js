@@ -51,7 +51,7 @@ if (CuesMonolithic !== dbInstance.models.CuesMonolithic) {
         await dbInstance.models.CuesMonolithic.sync();
         console.log(`DATABASE: Model synchronization for ${dbInstance.models.CuesMonolithic.name} is successful`);
     } catch (e) {
-        console.error(`ERROR: An error during authentication and table model syncronization occured for ${process.env.AWTDBNAME}\nREASON: ${e}`);
+        console.error(`[ERROR] An error during authentication and table model syncronization occured for ${process.env.AWTDBNAME}\nREASON: ${e}`);
     }
 })();
 
