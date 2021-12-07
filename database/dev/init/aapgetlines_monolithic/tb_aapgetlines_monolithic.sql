@@ -13,6 +13,7 @@ CREATE TABLE tbl_dubbing_cues_monolithic (
     age_range                       bigint[2]                       NOT NULL                DEFAULT array[2]::bigint[],
     timeline_values                 double precision[2]             NOT NULL                DEFAULT array[2]::double precision[],
     frame_rate                      double precision                NOT NULL                DEFAULT 0.0,
+    tick_rate                       double precision                NOT NULL                DEFAULT 0.0,
     timestamp_update                timestamp WITH TIME ZONE        NOT NULL                DEFAULT NOW(),
     timestamp_entry                 timestamp WITH TIME ZONE        NOT NULL                DEFAULT NOW()
 );

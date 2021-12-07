@@ -51,6 +51,12 @@ const CuesMonolithicModel = {
         allowNull: false,
         defaultValue: 0.0,
         field: 'frame_rate'
+    },
+    tickRate: {
+        type: DataTypes.DOUBLE,
+        allowNull: false,
+        defaultValue: 0.0,
+        field: 'tick_rate'
     }
 };
 
@@ -64,7 +70,8 @@ const qry_attributes_all = [
     CuesMonolithicModel.preparedCue.field,
     CuesMonolithicModel.ageRange.field,
     CuesMonolithicModel.timelineValues.field,
-    CuesMonolithicModel.frameRate.field
+    CuesMonolithicModel.frameRate.field,
+    CuesMonolithicModel.tickRate.field
 ];
 
 module.exports = {

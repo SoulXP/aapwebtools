@@ -11,6 +11,13 @@ const env = require('dotenv').config({ path: path.join(__dirname, 'env', 'dev.en
 const app = express();
 app.use('/', router);
 
+// Enable cross-origin resource sharing
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+
 // Host server
 http.createServer(app).listen(process.env.PORT || 8081, async () => {
 	console.log(`Server is running on port ${process.env.PORT || 8081}`);

@@ -4,9 +4,13 @@ const { Op } = require('sequelize');
 const { dbInstance } = require('../db/prepareInstance.js');
 const { CuesMonolithic, qry_attributes_all } = require('../db/models.js');
 const { stderr, stdout } = require('process');
-const { float_to_tc, tc_to_float } = require('../src/timecode.js');
+const { float_to_tc, tc_to_float } = require('../util/timecode.js');
+const { QueryTree } = require('../util/querytree.js');
 
 // TODO: Load Enviroment variables
+
+// Globals
+const QRY_LIMIT_MAX = 250;
 
 // Create route for new line entries
 router.post('/api', async (req, res) => {
@@ -25,11 +29,11 @@ router.get('/api', async (req, res) => {
 
     // Extract data from query
     let qry_names = [];
-    let qry_eps = [];
     let qry_projects = [];
     let qry_segments = [];
     let qry_catalogues = [];
     let qry_lines = [];
+    let qry_offset = 0;
 
     try {
         for (k of query_keys) {
@@ -41,13 +45,6 @@ router.get('/api', async (req, res) => {
                     }
                     break;
 
-                case 'eps':
-                    const dirty_eps = req.query[k].split(',');
-                    for (n of dirty_eps) {
-                        qry_eps.push(n.trim());
-                    }
-                    break;
-
                 case 'projects':
                     const dirty_projects = req.query[k].split('&&');
                     for (n of dirty_projects) {
@@ -55,7 +52,7 @@ router.get('/api', async (req, res) => {
                     }
                     break;
 
-                case 'segments':
+                case 'eps':
                     const dirty_segments = req.query[k].split(',');
                     for (n of dirty_segments) {
                         qry_segments.push(n.trim());
@@ -76,6 +73,12 @@ router.get('/api', async (req, res) => {
                     }
                     break;
 
+                case 'offset':
+                    const re_numbers = new RegExp('[^0-9]+', 'g');
+                    if (re_numbers.test(req.query[k])) throw `client query has invalid offset value: ${dirty_offset}`;
+                    qry_offset = parseInt(req.query[k]);
+                    break;
+
                 default:
                     console.log(`[WARNING] ignoring unknown api query: ${k}`);
                     break;
@@ -83,9 +86,24 @@ router.get('/api', async (req, res) => {
         }
     } catch (e) {
         console.log(`[ERROR] ${e}`);
+        res.status(400).json({ msg: "bad request" });
+        return;
     }
 
-    // Sanitize client query
+    // Sort various client parameters
+    const all_qry = [
+        [qry_names.length,      { characterName: qry_names         }],
+        [qry_projects.length,   { projectName: qry_projects        }],
+        [qry_segments.length,   { projectSegment: qry_segments     }],
+        [qry_catalogues.length, { projectCatalogue: qry_catalogues }],
+        [qry_lines.length,      { preparedCue: qry_lines           }]
+    ]
+
+    all_qry.sort((a,b) => {
+        return b[0] - a[0]
+    });
+
+    // Build conditions for data query
     const qry_where = {
         [Op.or]: qry_names.map((c) => {
             return { characterName: c.toUpperCase() };
@@ -93,30 +111,47 @@ router.get('/api', async (req, res) => {
     };
 
     // Query database
-    let qry_results = [];
+    let qry_res_total = 0;
+    let qry_res_results = [];
     try {
-        qry_results = await CuesMonolithic.findAll({
+        // Query to get total results
+        qry_res_total = await CuesMonolithic.count({
+                where: qry_where
+            }
+        );
+
+        // Main query for data
+        qry_res_results = await CuesMonolithic.findAll({
             attributes: qry_attributes_all,
             where: qry_where,
-            limit: 250
+            limit: QRY_LIMIT_MAX,
+            offset: qry_offset * QRY_LIMIT_MAX
         });
     } catch (e) {
         console.log(`[ERROR] ${e}`);
     }
 
-    if (qry_results.length === 0) {
+    if (qry_res_results.length === 0) {
         res.status(200).json({ msg: 'none' });
         return;
     }
 
     // Return results of query to client
-    let results = [
-        ...qry_results.map((c) => {
+    const results = [
+        ...qry_res_results.map((c) => {
             return c.dataValues;
         })
     ];
 
-    res.status(200).json(results);
+    let payload = {
+        total_query: qry_res_total,
+        total_data: results.length,
+        max_query: QRY_LIMIT_MAX,
+        current_offset: qry_offset,
+        data: results
+    };
+
+    res.status(200).json(payload);
     // res.status(200).json({ msg: "Success!" });
 });
 

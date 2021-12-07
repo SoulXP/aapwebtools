@@ -29,6 +29,7 @@ def cuedata_from_file(path, format='db', production=''):
     prod_name = prod_id = catalgoue = ep = character = cue = ''
     age_lo = age_hi = tc_in = tc_out = 0
     frame_rate = 25 # TODO: Default to 0 and handle if not found in EDL
+    tick_rate = 0.0
 
 
     with open(path, 'r') as f:
@@ -58,7 +59,7 @@ def cuedata_from_file(path, format='db', production=''):
                         cue = fields[4].strip().replace("'", "''")
 
 
-                    entry = { 'prod': production, 'code': prod_id, 'catalogue': 'MONOLITH', 'ep': ep, 'character': character, 'line': cue, 'age': [age_lo, age_hi], 'tc': [tc_in, tc_out], 'framerate': frame_rate }
+                    entry = { 'prod': production, 'code': prod_id, 'catalogue': 'MONOLITH', 'ep': ep, 'character': character, 'line': cue, 'age': [age_lo, age_hi], 'tc': [tc_in, tc_out], 'framerate': frame_rate, 'tickrate': tick_rate }
 
                 entries.append(entry)
 
@@ -72,13 +73,14 @@ def cuedata_from_file(path, format='db', production=''):
                 ep = fields[3].strip()
                 character = fields[4].strip().replace("'", "''")
                 frame_rate = float(fields[7].strip())
+                tick_rate = float(fields[8].strip())
                 tc_in = tc_to_float(fields[5].strip(), frame_rate)
                 tc_out = tc_to_float(fields[6].strip(), frame_rate)
-                age_lo = int(fields[8].strip())
-                age_hi = int(fields[9].strip())
-                cue = fields[10].strip().replace("'", "''")
+                age_lo = int(fields[9].strip())
+                age_hi = int(fields[10].strip())
+                cue = fields[11].strip().replace("'", "''")
 
-                entry = { 'prod': prod_name, 'code': prod_id, 'catalogue': catalogue, 'ep': ep, 'character': character, 'line': cue, 'age': [age_lo, age_hi], 'tc': [tc_in, tc_out], 'framerate': frame_rate }
+                entry = { 'prod': prod_name, 'code': prod_id, 'catalogue': catalogue, 'ep': ep, 'character': character, 'line': cue, 'age': [age_lo, age_hi], 'tc': [tc_in, tc_out], 'framerate': frame_rate, 'tickrate': tick_rate }
                 entries.append(entry)
         else:
             raise Exception('please pass a valid format type to parse cue data')
@@ -104,7 +106,7 @@ def prepare_insertion(data):
                 hi = str(d[k][1])
                 v = f'ARRAY [{lo}, {hi}]'
 
-            elif k == 'framerate':
+            elif k == 'framerate' or k == 'tickrate':
                 v = str(d[k])
 
             if j < len(d) - 1:
@@ -120,7 +122,7 @@ def prepare_insertion(data):
         i = i + 1
         j = 0
         
-    return f'INSERT INTO tbl_dubbing_cues_monolithic(project_name, project_identifier, project_catalogue, project_segment, character_name, prepared_cue, age_range, timeline_values, frame_rate) VALUES {entry}'
+    return f'INSERT INTO tbl_dubbing_cues_monolithic(project_name, project_identifier, project_catalogue, project_segment, character_name, prepared_cue, age_range, timeline_values, frame_rate, tick_rate) VALUES {entry}'
 
 
 def main():
