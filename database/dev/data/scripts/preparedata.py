@@ -13,14 +13,14 @@ parser.add_argument('--path', '-p', required=True, help='path containing EDL dat
 args = vars(parser.parse_args())
 
 # TODO: Error handling for bad tc string
-def tc_to_float(tc, frame_rate):
+def tc_to_float(tc, frame_rate, tick_rate):
     chunks = re.findall('\d+', tc)
     h = float(chunks[0]) * 60.0 * 60.0
     m = float(chunks[1]) * 60.0
     s = float(chunks[2])
     f = float(chunks[3]) / frame_rate
 
-    return (h + m + s + f) * 10000000.0 # Create a precision constant for this
+    return (h + m + s + f) * tick_rate # Create a precision constant for this
 
 # Helper functions
 def cuedata_from_file(path, format='db', production=''):
@@ -29,7 +29,7 @@ def cuedata_from_file(path, format='db', production=''):
     prod_name = prod_id = catalgoue = ep = character = cue = ''
     age_lo = age_hi = tc_in = tc_out = 0
     frame_rate = 25 # TODO: Default to 0 and handle if not found in EDL
-    tick_rate = 0.0
+    tick_rate = 1000000.0 # TODO: Handle bad defaults
 
 
     with open(path, 'r') as f:
@@ -50,10 +50,10 @@ def cuedata_from_file(path, format='db', production=''):
                         age_hi = int(ages[1].strip()[:-1])
                     elif i == 2:
                         _, _, tc_in_ = [s.strip() for s in fields[2].split(sep=' ')]
-                        tc_in = tc_to_float(tc_in_, frame_rate) # TODO: Accomodate for different frame rates
+                        tc_in = tc_to_float(tc_in_, frame_rate, tick_rate) # TODO: Accomodate for different frame rates
                     elif i == 3:
                         _, _, tc_out_ = [s.strip() for s in fields[3].split(sep=' ')]
-                        tc_out = tc_to_float(tc_out_, frame_rate) # TODO: Accomodate for different frame rates
+                        tc_out = tc_to_float(tc_out_, frame_rate, tick_rate) # TODO: Accomodate for different frame rates
                     elif i == 4:\
                         # TODO: Escape special characters
                         cue = fields[4].strip().replace("'", "''")
@@ -74,8 +74,8 @@ def cuedata_from_file(path, format='db', production=''):
                 character = fields[4].strip().replace("'", "''")
                 frame_rate = float(fields[7].strip())
                 tick_rate = float(fields[8].strip())
-                tc_in = tc_to_float(fields[5].strip(), frame_rate)
-                tc_out = tc_to_float(fields[6].strip(), frame_rate)
+                tc_in = tc_to_float(fields[5].strip(), frame_rate, tick_rate)
+                tc_out = tc_to_float(fields[6].strip(), frame_rate, tick_rate)
                 age_lo = int(fields[9].strip())
                 age_hi = int(fields[10].strip())
                 cue = fields[11].strip().replace("'", "''")

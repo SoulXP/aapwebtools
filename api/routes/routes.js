@@ -3,9 +3,9 @@ const router = express.Router();
 const { Op } = require('sequelize');
 const { dbInstance } = require('../db/prepareInstance.js');
 const { CuesMonolithic, qry_attributes_all } = require('../db/models.js');
-const { stderr, stdout } = require('process');
 const { float_to_tc, tc_to_float } = require('../util/timecode.js');
 const { QueryTree } = require('../util/querytree.js');
+const it = require('itertools');
 
 // TODO: Load Enviroment variables
 
@@ -91,17 +91,25 @@ router.get('/api', async (req, res) => {
     }
 
     // Sort various client parameters
+    let collapsed_qry = [];
     const all_qry = [
         [qry_names.length,      { characterName: qry_names         }],
         [qry_projects.length,   { projectName: qry_projects        }],
         [qry_segments.length,   { projectSegment: qry_segments     }],
         [qry_catalogues.length, { projectCatalogue: qry_catalogues }],
         [qry_lines.length,      { preparedCue: qry_lines           }]
-    ]
+    ];
 
     all_qry.sort((a,b) => {
-        return b[0] - a[0]
+        return a[0] - b[0]
     });
+
+    all_qry.forEach((current) => {
+        const k = Object.keys(current[1])[0];
+        for (e of current[1][k]) {
+            collapsed_qry.push({ [k]: e }); 
+        }
+    }, collapsed_qry)
 
     // Build conditions for data query
     const qry_where = {
@@ -125,7 +133,8 @@ router.get('/api', async (req, res) => {
             attributes: qry_attributes_all,
             where: qry_where,
             limit: QRY_LIMIT_MAX,
-            offset: qry_offset * QRY_LIMIT_MAX
+            offset: qry_offset * QRY_LIMIT_MAX,
+            order: [['id', 'ASC'], ['project_name', 'ASC']]
         });
     } catch (e) {
         console.log(`[ERROR] ${e}`);

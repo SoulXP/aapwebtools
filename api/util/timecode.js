@@ -5,27 +5,27 @@ const NANOSECONDS = 1000000000.0;
 const N_RESOLUTION = MICROSECONDS;
 
 // TODO: Fix precision/rounding error for floats
-function float_to_tc(n, frame_rate) {
+function float_to_tc(n, frame_rate, tick_rate) {
     let h = m = s = f = 0.0
-    if (n >= 60.0 * 60.0 * N_RESOLUTION) {
-        h = n / (60.0 * 60.0 * N_RESOLUTION);
+    if (n >= 60.0 * 60.0 * tick_rate) {
+        h = n / (60.0 * 60.0 * tick_rate);
         h = Math.trunc(h);
-        n = n % (60.0 * 60.0 * N_RESOLUTION);
+        n = n % (60.0 * 60.0 * tick_rate);
     }
     
-    if (n >= 60.0 * N_RESOLUTION) {
-        m = n / (60.0 * N_RESOLUTION);
+    if (n >= 60.0 * tick_rate) {
+        m = n / (60.0 * tick_rate);
         m = Math.trunc(m);
-        n = n % (60.0 * N_RESOLUTION);
+        n = n % (60.0 * tick_rate);
     }
     
-    if (n >= N_RESOLUTION) {
-        s = n / N_RESOLUTION;
+    if (n >= tick_rate) {
+        s = n / tick_rate;
         s = Math.trunc(s);
-        n = n % N_RESOLUTION;
+        n = n % tick_rate;
     }
 
-    f = Math.round(n * frame_rate / N_RESOLUTION);
+    f = Math.round(n * frame_rate / tick_rate);
 
     hs = (h.toString().length == 1) ? '0' + h.toString() : h.toString();
     ms = (m.toString().length == 1) ? '0' + m.toString() : m.toString();
@@ -35,7 +35,7 @@ function float_to_tc(n, frame_rate) {
     return `${hs}:${ms}:${ss}:${fs}`;
 }
 
-function tc_to_float(tc, frame_rate) {
+function tc_to_float(tc, frame_rate, tick_rate) {
     let h = m = s = f = 0.0
     const chunks = tc.split(':') // TODO: Handle drop-frame with ; delimiter
     
@@ -44,7 +44,7 @@ function tc_to_float(tc, frame_rate) {
     s = parseFloat(chunks[2]);
     f = parseFloat(chunks[3]) / frame_rate;
 
-    return (h + m + s + f) * N_RESOLUTION;
+    return (h + m + s + f) * tick_rate;
 }
 
 // Module exports
