@@ -4,7 +4,7 @@ const { Op } = require('sequelize');
 const { dbInstance } = require('../db/prepareInstance.js');
 const { CuesMonolithic, qry_attributes_all } = require('../db/models.js');
 const { float_to_tc, tc_to_float } = require('../util/timecode.js');
-const { all_combinations } = require('../util/querytree.js');
+const { all_combinations } = require('../util/algorithm.js');
 const it = require('itertools');
 
 // TODO: Load Enviroment variables
