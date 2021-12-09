@@ -4,7 +4,7 @@ const { Op } = require('sequelize');
 const { dbInstance } = require('../db/prepareInstance.js');
 const { CuesMonolithic, qry_attributes_all } = require('../db/models.js');
 const { float_to_tc, tc_to_float } = require('../util/timecode.js');
-const { QueryTree } = require('../util/querytree.js');
+const { all_combinations } = require('../util/querytree.js');
 const it = require('itertools');
 
 // TODO: Load Enviroment variables
@@ -90,32 +90,71 @@ router.get('/api', async (req, res) => {
         return;
     }
 
-    // Sort various client parameters
-    let collapsed_qry = [];
-    const all_qry = [
-        [qry_names.length,      { characterName: qry_names         }],
-        [qry_projects.length,   { projectName: qry_projects        }],
-        [qry_segments.length,   { projectSegment: qry_segments     }],
-        [qry_catalogues.length, { projectCatalogue: qry_catalogues }],
-        [qry_lines.length,      { preparedCue: qry_lines           }]
-    ];
-
-    all_qry.sort((a,b) => {
-        return a[0] - b[0]
+    // Filter out empty arrays in values input argument
+    let qry_tagged = [];
+    const qry_uncollapsed = [
+        ['characterName',    qry_names      ],
+        ['projectName',      qry_projects   ],
+        ['projectSegment',   qry_segments   ],
+        ['projectCatalogue', qry_catalogues ],
+        ['preparedCue',      qry_lines      ]
+    ].filter((c) => {
+        return c[1].length > 0;
     });
 
-    all_qry.forEach((current) => {
-        const k = Object.keys(current[1])[0];
-        for (e of current[1][k]) {
-            collapsed_qry.push({ [k]: e }); 
+    qry_uncollapsed.forEach((c) => {
+        const k = c[0];
+        let grp = [];
+        for (e of c[1]) {
+            grp.push({ [k]: e });
         }
-    }, collapsed_qry)
+        qry_tagged.push(grp);
+    })
+
+    qry_combos = all_combinations(qry_tagged);
 
     // Build conditions for data query
     const qry_where = {
-        [Op.or]: qry_names.map((c) => {
-            return { characterName: c.toUpperCase() };
-        }),
+        [Op.or]: qry_combos.map((c) => {
+            let catalogue = 'S'; // TODO: handle syntax for different catalogue types i.e reels, episodes, etc.
+            let segment = 'EP'; // TODO: handle syntax for different segment types i.e reels, episodes, etc.
+            let options = [];
+
+            for (e of c) {
+                const k = Object.keys(e)[0];
+
+                switch (k) {
+                    case 'projectName':
+                        options.push({ [k]: e[k].toUpperCase() });
+                        break;
+
+                    case 'projectCatalogue':
+                        // TODO: handle syntax for different catalogue types i.e reels, episodes, etc.
+                        options.push({ [k]: catalogue + ((e[k].length > 1) ? e[k] : '0' + e[k]) });
+                        break;
+                        
+                    case 'projectSegment':
+                        // TODO: handle syntax for different segment types i.e reels, episodes, etc.
+                        options.push({ [k]: segment + ((e[k].length > 1) ? e[k] : '0' + e[k]) });
+                        break;
+                        
+                    case 'characterName':
+                        options.push({ [k]: e[k].toUpperCase() });
+                        break;
+
+                    case 'preparedCue':
+                        const regex_string = `\\y${e[k]}\\y`;
+                        options.push({ [k]: { [Op.iRegexp]: regex_string } });
+                        break;
+
+                    default:
+                        console.log(`[WARNING] key of ${k} is not recognized. skipping`);
+                        break; 
+                }
+            }
+
+            return { [Op.and]: options };
+        })
     };
 
     // Query database
