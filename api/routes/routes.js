@@ -13,17 +13,17 @@ const it = require('itertools');
 const QRY_LIMIT_MAX = 250;
 
 // Create route for new line entries
-router.post('/api', async (req, res) => {
+router.post('/q', async (req, res) => {
     // TODO
     res.status(401).json({ msg: 'POST route to API not authorized' });
 });
 
 // Read route for searching lines
-router.get('/api', async (req, res) => {
+router.get('/q', async (req, res) => {
     // Validate client query
     const query_keys = Object.keys(req.query);
     if (query_keys.length === 0) {
-        res.status(400).json({ msg: 'please specify a query' });
+        res.status(200).json({ msg: 'please specify a query' });
         return;
     }
 
@@ -36,39 +36,39 @@ router.get('/api', async (req, res) => {
     let qry_offset = 0;
 
     try {
-        for (k of query_keys) {
+        for (const k of query_keys) {
             switch (k) {
                 case 'names':
                     const dirty_names = req.query[k].split(',');
-                    for (n of dirty_names) {
+                    for (const n of dirty_names) {
                         qry_names.push(n.trim());
                     }
                     break;
 
                 case 'projects':
                     const dirty_projects = req.query[k].split('&&');
-                    for (n of dirty_projects) {
+                    for (const n of dirty_projects) {
                         qry_projects.push(n.trim());
                     }
                     break;
 
                 case 'eps':
                     const dirty_segments = req.query[k].split(',');
-                    for (n of dirty_segments) {
+                    for (const n of dirty_segments) {
                         qry_segments.push(n.trim());
                     }
                     break;
 
                 case 'catalogues':
                     const dirty_catalogues = req.query[k].split(',');
-                    for (n of dirty_catalogues) {
+                    for (const n of dirty_catalogues) {
                         qry_catalogues.push(n.trim());
                     }
                     break;
 
                 case 'lines':
                     const dirty_lines = req.query[k].split('&&');
-                    for (n of dirty_lines) {
+                    for (const n of dirty_lines) {
                         qry_lines.push(n.trim());
                     }
                     break;
@@ -105,7 +105,7 @@ router.get('/api', async (req, res) => {
     qry_uncollapsed.forEach((c) => {
         const k = c[0];
         let grp = [];
-        for (e of c[1]) {
+        for (const e of c[1]) {
             grp.push({ [k]: e });
         }
         qry_tagged.push(grp);
@@ -120,7 +120,7 @@ router.get('/api', async (req, res) => {
             let segment = 'EP'; // TODO: handle syntax for different segment types i.e reels, episodes, etc.
             let options = [];
 
-            for (e of c) {
+            for (const e of c) {
                 const k = Object.keys(e)[0];
 
                 switch (k) {
@@ -193,10 +193,10 @@ router.get('/api', async (req, res) => {
 
     let payload = {
         total_query: qry_res_total,
-        total_data: results.length,
+        total_results: results.length,
         max_query: QRY_LIMIT_MAX,
         current_offset: qry_offset,
-        data: results
+        results: results
     };
 
     res.status(200).json(payload);
@@ -204,13 +204,13 @@ router.get('/api', async (req, res) => {
 });
 
 // Update route for updating existing entries
-router.put('/api', async (req, res) => {
+router.put('/q', async (req, res) => {
     // TODO
     res.status(401).json({ msg: 'PUT route to API not authorized' });
 });
 
 // Delete route for removing existing entries
-router.delete('/api', async (req, res) => {
+router.delete('/q', async (req, res) => {
     // TODO
     res.status(401).json({ msg: 'DELETE route to API not authorized' });
 });
