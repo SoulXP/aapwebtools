@@ -27,10 +27,10 @@ function float_to_tc(n, frame_rate, tick_rate) {
 
     f = Math.round(n * frame_rate / tick_rate);
 
-    hs = (h.toString().length == 1) ? '0' + h.toString() : h.toString();
-    ms = (m.toString().length == 1) ? '0' + m.toString() : m.toString();
-    ss = (s.toString().length == 1) ? '0' + s.toString() : s.toString();
-    fs = (f.toString().length == 1) ? '0' + f.toString() : f.toString();
+    const hs = (h.toString().length === 1) ? '0' + h.toString() : h.toString();
+    const ms = (m.toString().length === 1) ? '0' + m.toString() : m.toString();
+    const ss = (s.toString().length === 1) ? '0' + s.toString() : s.toString();
+    const fs = (f.toString().length === 1) ? '0' + f.toString() : f.toString();
 
     return `${hs}:${ms}:${ss}:${fs}`;
 }

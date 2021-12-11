@@ -176,11 +176,8 @@ router.get('/q', async (req, res) => {
             order: [['id', 'ASC'], ['project_name', 'ASC']]
         });
     } catch (e) {
-        console.log(`[ERROR] ${e}`);
-    }
-
-    if (qry_res_results.length === 0) {
-        res.status(200).json({ msg: 'none' });
+        console.error(`[ERROR] ${e}`);
+        res.status(500).json({ msg: 'internal error'});
         return;
     }
 
@@ -191,13 +188,10 @@ router.get('/q', async (req, res) => {
         })
     ];
 
-    let payload = {
-        total_query: qry_res_total,
-        total_results: results.length,
-        max_query: QRY_LIMIT_MAX,
-        current_offset: qry_offset,
-        results: results
-    };
+    const payload = ((qry_res_total > 0)
+        ? { total_query: qry_res_total, total_results: results.length, max_query: QRY_LIMIT_MAX, current_offset: qry_offset, results: results }
+        : { total_query: 0, total_results: 0, max_query: QRY_LIMIT_MAX, current_offset: 0, results: [] }
+    );
 
     res.status(200).json(payload);
     // res.status(200).json({ msg: "Success!" });
