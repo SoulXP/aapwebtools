@@ -20,13 +20,6 @@ router.post('/q', async (req, res) => {
 
 // Read route for searching lines
 router.get('/q', async (req, res) => {
-    // Validate client query
-    const query_keys = Object.keys(req.query);
-    if (query_keys.length === 0) {
-        res.status(200).json({ msg: 'please specify a query' });
-        return;
-    }
-
     // Extract data from query
     let qry_names = [];
     let qry_projects = [];
@@ -36,6 +29,14 @@ router.get('/q', async (req, res) => {
     let qry_offset = 0;
 
     try {
+        // Validate client query
+        const query_keys = Object.keys(req.query);
+        if (query_keys.length === 0 || query_keys.length === 1 && query_keys[0] === 'offset') {
+            res.status(200).json({ msg: 'insufficient parameters in request query' });
+            return;
+        }
+    
+
         for (const k of query_keys) {
             switch (k) {
                 case 'names':
@@ -80,13 +81,25 @@ router.get('/q', async (req, res) => {
                     break;
 
                 default:
-                    console.log(`[WARNING] ignoring unknown api query: ${k}`);
+                    console.log(`[MESSAGE] ignoring unknown api query: ${k}`);
                     break;
             }
         }
     } catch (e) {
-        console.log(`[ERROR] ${e}`);
-        res.status(400).json({ msg: "bad request" });
+        console.log(`[MESSAGE] ${e}`);
+        res.status(400).json({ msg: "bad query in request" });
+        return;
+    }
+
+    if (qry_names.length === 0
+        && qry_projects.length === 0
+        && qry_segments.length === 0
+        && qry_catalogues.length === 0
+        && qry_lines.length === 0)
+    {
+        const msg = 'no valid parameters were passed in request query'
+        console.log(`[MESSAGE] canceling search query: ${msg}`);
+        res.status(400).json({ msg });
         return;
     }
 
@@ -109,7 +122,7 @@ router.get('/q', async (req, res) => {
             grp.push({ [k]: e });
         }
         qry_tagged.push(grp);
-    })
+    });
 
     qry_combos = all_combinations(qry_tagged);
 
