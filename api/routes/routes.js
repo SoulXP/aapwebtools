@@ -32,7 +32,7 @@ router.get('/q', async (req, res) => {
         // Validate client query
         const query_keys = Object.keys(req.query);
         if (query_keys.length === 0 || query_keys.length === 1 && query_keys[0] === 'offset') {
-            res.status(200).json({ msg: 'insufficient parameters in request query' });
+            res.status(400).json({ msg: 'insufficient parameters in request query' });
             return;
         }
     
