@@ -4,6 +4,7 @@ const { CuesMonolithic, CuesMonolithicModel } = require('./models.js');
 
 // TODO: Handle misconfigured environment
 env.config({ path: process.cwd() + '/env/api.env' });
+const db_table = (process.env.NODE_ENV === 'development') ? process.env.AWTDBTABLE_DEV : process.env.AWTDBTABLE;
 
 // Create pools for database to be used throughout application
 const dbInstance = new Sequelize ({
@@ -18,6 +19,7 @@ const dbInstance = new Sequelize ({
 
 
 // Initialization of CuesMonolithic model
+// Production model instance
 CuesMonolithic.init(
     // Model
     {
@@ -28,7 +30,7 @@ CuesMonolithic.init(
     {
         sequelize: dbInstance,
         modelName: 'CuesMonolithic',
-        tableName: 'tbl_dubbing_cues_monolithic',
+        tableName: db_table,
         timestamps: true,
         updatedAt: 'timestamp_update',
         createdAt: 'timestamp_entry'

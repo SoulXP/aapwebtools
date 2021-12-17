@@ -1,13 +1,12 @@
 const express = require('express');
 const router = express.Router();
+const env = require('dotenv');
 const { Op } = require('sequelize');
-const { dbInstance } = require('../db/prepareInstance.js');
 const { CuesMonolithic, qry_attributes_all } = require('../db/models.js');
-const { float_to_tc, tc_to_float } = require('../util/timecode.js');
 const { all_combinations } = require('../util/algorithm.js');
-const it = require('itertools');
 
 // TODO: Load Enviroment variables
+// env.config({ path: process.cwd() + '/env/api.env' });
 
 // Globals
 const QRY_LIMIT_MAX = 250;
@@ -175,10 +174,7 @@ router.get('/q', async (req, res) => {
     let qry_res_results = [];
     try {
         // Query to get total results
-        qry_res_total = await CuesMonolithic.count({
-                where: qry_where
-            }
-        );
+        qry_res_total = await CuesMonolithic.count({where: qry_where});
 
         // Main query for data
         qry_res_results = await CuesMonolithic.findAll({

@@ -1,8 +1,8 @@
 -- Drop table before creating new one
-DROP TABLE IF EXISTS tbl_dubbing_cues_monolithic CASCADE;
+DROP TABLE IF EXISTS tbl_development_monolithic CASCADE;
 
 -- Dubbing cue data for each project segment
-CREATE TABLE tbl_dubbing_cues_monolithic (
+CREATE TABLE tbl_development_monolithic (
     id                              bigserial                       UNIQUE NOT NULL                                             PRIMARY KEY,
     project_name                    varchar(200)                    NOT NULL,
     project_identifier              varchar(10)                     NOT NULL,
@@ -17,3 +17,21 @@ CREATE TABLE tbl_dubbing_cues_monolithic (
     timestamp_update                timestamp WITH TIME ZONE        NOT NULL                DEFAULT NOW(),
     timestamp_entry                 timestamp WITH TIME ZONE        NOT NULL                DEFAULT NOW()
 );
+
+-- Function for updating tables with timestamp_update columns
+CREATE OR REPLACE FUNCTION fnc_timestamp_update() RETURNS Trigger
+LANGUAGE 'plpgsql'
+AS $$
+    BEGIN
+        NEW.timestamp_update = NOW();
+        RETURN NEW;
+    END;
+$$;
+
+-- Start fresh if trigger exist
+DROP TRIGGER IF EXISTS tg_timestamp_update ON tbl_development_monolithic CASCADE;
+
+-- Update timestamps for entries
+CREATE TRIGGER tg_timestamp_update BEFORE UPDATE
+ON tbl_development_monolithic FOR EACH ROW
+EXECUTE PROCEDURE fnc_timestamp_update();

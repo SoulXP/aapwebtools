@@ -5,7 +5,7 @@ const path = require('path');
 const http = require("http");
 
 // TODO: Handle environment
-const env = require('dotenv').config({ path: path.join(__dirname, 'env', 'dev.env') });
+const env = require('dotenv').config({ path: process.cwd() + '/env/api.env' });
 
 // Initaliaze express framework
 const app = express();
