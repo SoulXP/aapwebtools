@@ -25,6 +25,7 @@ router.get('/q', async (req, res) => {
     let qry_segments = [];
     let qry_catalogues = [];
     let qry_lines = [];
+    let qry_page = 0;
     let qry_offset = 0;
 
     try {
@@ -35,6 +36,8 @@ router.get('/q', async (req, res) => {
             return;
         }
     
+        // Regexes for text processing
+        const re_numbers = new RegExp('[^0-9]+', 'g');
 
         for (const k of query_keys) {
             switch (k) {
@@ -73,10 +76,16 @@ router.get('/q', async (req, res) => {
                     }
                     break;
 
+                case 'page':
+                    const dirty_page = req.query[k];
+                    if (re_numbers.test(req.query[k])) throw `client query has invalid page value: ${dirty_page}`;
+                    qry_page = parseInt(dirty_page);
+                    break;
+
                 case 'offset':
-                    const re_numbers = new RegExp('[^0-9]+', 'g');
+                    const dirty_offset = req.query[k];
                     if (re_numbers.test(req.query[k])) throw `client query has invalid offset value: ${dirty_offset}`;
-                    qry_offset = parseInt(req.query[k]);
+                    qry_offset = parseInt(dirty_offset);
                     break;
 
                 default:
@@ -181,7 +190,7 @@ router.get('/q', async (req, res) => {
             attributes: qry_attributes_all,
             where: qry_where,
             limit: QRY_LIMIT_MAX,
-            offset: qry_offset * QRY_LIMIT_MAX,
+            offset: qry_page * QRY_LIMIT_MAX + qry_offset,
             order: [['id', 'ASC'], ['project_name', 'ASC']]
         });
     } catch (e) {
@@ -198,8 +207,8 @@ router.get('/q', async (req, res) => {
     ];
 
     const payload = ((qry_res_total > 0)
-        ? { total_query: qry_res_total, total_results: results.length, max_query: QRY_LIMIT_MAX, current_offset: qry_offset, results: results }
-        : { total_query: 0, total_results: 0, max_query: QRY_LIMIT_MAX, current_offset: 0, results: [] }
+        ? { total_query: qry_res_total, total_results: results.length, max_query: QRY_LIMIT_MAX, current_page: qry_page, current_offset: qry_offset, results: results }
+        : { total_query: 0, total_results: 0, max_query: QRY_LIMIT_MAX, current_page: 0, current_offset: 0, results: [] }
     );
 
     res.status(200).json(payload);
