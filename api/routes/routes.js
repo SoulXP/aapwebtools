@@ -27,11 +27,27 @@ router.get('/q', async (req, res) => {
     let qry_lines = [];
     let qry_page = 0;
     let qry_offset = 0;
+    let qry_limit = QRY_LIMIT_MAX;
 
     try {
         // Validate client query
         const query_keys = Object.keys(req.query);
-        if (query_keys.length === 0 || query_keys.length === 1 && query_keys[0] === 'offset') {
+
+        // Find required keys
+        let valid_query = false;
+        for (const k of query_keys) {
+            if (   k === 'names' 
+                || k === 'projects' 
+                || k === 'eps' 
+                || k === 'catalogues' 
+                || k === 'lines'     )
+            {
+                valid_query = true;
+            }
+        }
+
+        if (!valid_query)
+        {
             res.status(400).json({ msg: 'insufficient parameters in request query' });
             return;
         }
@@ -78,14 +94,20 @@ router.get('/q', async (req, res) => {
 
                 case 'page':
                     const dirty_page = req.query[k];
-                    if (re_numbers.test(req.query[k])) throw `client query has invalid page value: ${dirty_page}`;
+                    if (re_numbers.test(dirty_page)) throw `client query has invalid page value: ${dirty_page}`;
                     qry_page = parseInt(dirty_page);
                     break;
 
                 case 'offset':
                     const dirty_offset = req.query[k];
-                    if (re_numbers.test(req.query[k])) throw `client query has invalid offset value: ${dirty_offset}`;
+                    if (re_numbers.test(dirty_offset)) throw `client query has invalid offset value: ${dirty_offset}`;
                     qry_offset = parseInt(dirty_offset);
+                    break;
+
+                case 'limit':
+                    const dirty_limit = req.query[k];
+                    if (re_numbers.test(dirty_limit)) throw `client query has invalid limit value: ${dirty_limit}`;
+                    qry_limit = parseInt(dirty_limit);
                     break;
 
                 default:
@@ -110,6 +132,9 @@ router.get('/q', async (req, res) => {
         res.status(400).json({ msg });
         return;
     }
+
+    // Constrain total query results that can be sent in payload
+    qry_limit = Math.min(qry_limit, QRY_LIMIT_MAX);
 
     // Filter out empty arrays in values input argument
     let qry_tagged = [];
@@ -189,8 +214,8 @@ router.get('/q', async (req, res) => {
         qry_res_results = await CuesMonolithic.findAll({
             attributes: qry_attributes_all,
             where: qry_where,
-            limit: QRY_LIMIT_MAX,
-            offset: qry_page * QRY_LIMIT_MAX + qry_offset,
+            limit: qry_limit,
+            offset: qry_page * qry_limit + qry_offset,
             order: [['id', 'ASC'], ['project_name', 'ASC']]
         });
     } catch (e) {
@@ -207,8 +232,8 @@ router.get('/q', async (req, res) => {
     ];
 
     const payload = ((qry_res_total > 0)
-        ? { total_query: qry_res_total, total_results: results.length, max_query: QRY_LIMIT_MAX, current_page: qry_page, current_offset: qry_offset, results: results }
-        : { total_query: 0, total_results: 0, max_query: QRY_LIMIT_MAX, current_page: 0, current_offset: 0, results: [] }
+        ? { total_query: qry_res_total, total_results: results.length, max_query: QRY_LIMIT_MAX, current_page: qry_page, current_offset: qry_offset, qry_limit: qry_limit, results: results }
+        : { total_query: 0, total_results: 0, max_query: QRY_LIMIT_MAX, current_page: 0, current_offset: 0, qry_limit: qry_limit, results: [] }
     );
 
     res.status(200).json(payload);
