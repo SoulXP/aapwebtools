@@ -1,10 +1,9 @@
 const env = require('dotenv');
 const { Sequelize } = require('sequelize');
-const { CuesMonolithic, CuesMonolithicModel } = require('./models.js');
+const { CuesMonolithic, CuesMonolithicDev, CuesMonolithicModel } = require('./models.js');
 
 // TODO: Handle misconfigured environment
 env.config({ path: process.cwd() + '/env/api.env' });
-const db_table = (process.env.NODE_ENV === 'development') ? process.env.AWTDBTABLE_DEV : process.env.AWTDBTABLE;
 
 // Create pools for database to be used throughout application
 const dbInstance = new Sequelize ({
@@ -16,7 +15,6 @@ const dbInstance = new Sequelize ({
     port: process.env.AWTDBPORT,
     timezone: '+02:00'
 });
-
 
 // Initialization of CuesMonolithic model
 // Production model instance
@@ -30,7 +28,25 @@ CuesMonolithic.init(
     {
         sequelize: dbInstance,
         modelName: 'CuesMonolithic',
-        tableName: db_table,
+        tableName: process.env.AWTDBTABLE,
+        timestamps: true,
+        updatedAt: 'timestamp_update',
+        createdAt: 'timestamp_entry'
+    }
+);
+
+// Development model instance
+CuesMonolithicDev.init(
+    // Model
+    {
+        ...CuesMonolithicModel
+    },
+
+    // Database connection for model
+    {
+        sequelize: dbInstance,
+        modelName: 'CuesMonolithic',
+        tableName: process.env.AWTDBTABLE_DEV,
         timestamps: true,
         updatedAt: 'timestamp_update',
         createdAt: 'timestamp_entry'
@@ -60,5 +76,6 @@ if (CuesMonolithic !== dbInstance.models.CuesMonolithic) {
 
 module.exports = {
     dbInstance,
-    CuesMonolithic
+    CuesMonolithic,
+    CuesMonolithicDev
 };

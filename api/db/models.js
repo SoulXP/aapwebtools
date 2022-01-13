@@ -1,7 +1,8 @@
 const { DataTypes, Model } = require('sequelize');
 
 // Model for monolithic table in database
-class CuesMonolithic extends Model {}
+class CuesMonolithic extends Model {};
+class CuesMonolithicDev extends Model {};
 
 const CuesMonolithicModel = {
     projectName: {
@@ -76,6 +77,7 @@ const qry_attributes_all = [
 
 module.exports = {
     CuesMonolithic,
+    CuesMonolithicDev,
     CuesMonolithicModel,
     qry_attributes_all
 }

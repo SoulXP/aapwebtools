@@ -2,11 +2,15 @@ const express = require('express');
 const router = express.Router();
 const env = require('dotenv');
 const { Op } = require('sequelize');
-const { CuesMonolithic, qry_attributes_all } = require('../db/models.js');
+const { CuesMonolithic, CuesMonolithicDev, qry_attributes_all } = require('../db/models.js');
 const { all_combinations } = require('../util/algorithm.js');
+const { sleep } = require('../util/etc');
 
 // TODO: Load Enviroment variables
 // env.config({ path: process.cwd() + '/env/api.env' });
+
+// Set database configuration based on environment
+const db_cues = (process.env.NODE_ENV === 'production') ? CuesMonolithic : CuesMonolithicDev;
 
 // Globals
 const QRY_LIMIT_MAX = 250;
@@ -208,10 +212,10 @@ router.get('/q', async (req, res) => {
     let qry_res_results = [];
     try {
         // Query to get total results
-        qry_res_total = await CuesMonolithic.count({where: qry_where});
+        qry_res_total = await db_cues.count({where: qry_where});
 
         // Main query for data
-        qry_res_results = await CuesMonolithic.findAll({
+        qry_res_results = await db_cues.findAll({
             attributes: qry_attributes_all,
             where: qry_where,
             limit: qry_limit,
@@ -236,7 +240,8 @@ router.get('/q', async (req, res) => {
         : { total_query: 0, total_results: 0, max_query: QRY_LIMIT_MAX, current_page: 0, current_offset: 0, qry_limit: qry_limit, results: [] }
     );
 
-    res.status(200).json(payload);
+    // Simulate latency for client requests
+    sleep(() => { res.status(200).json(payload); }, 5000.0);
     // res.status(200).json({ msg: "Success!" });
 });
 
