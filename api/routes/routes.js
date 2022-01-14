@@ -241,8 +241,8 @@ router.get('/q', async (req, res) => {
     );
 
     // Simulate latency for client requests
-    sleep(() => { res.status(200).json(payload); }, 5000.0);
-    // res.status(200).json({ msg: "Success!" });
+    // sleep(() => { res.status(200).json(payload); }, 5000.0);
+    res.status(200).json(payload);
 });
 
 // Update route for updating existing entries
