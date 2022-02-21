@@ -3,13 +3,15 @@ import './styles.css';
 import './App.css';
 import Searchbar from './components/searchbar/SearchBar.js';
 import { api, API_RESULT_KEYS, API_LOCAL_DEFAULTS, build_query_string } from './http/ApiClient.js';
-import Table from './components/resultstable/Table.js';
+import Table from './components/table/Table.js';
+import CollapsibleTable from './components/table/CollapsibleTable.js';
 import TablePagination from './components/table/TablePagination.js';
 import OptionsButton from './components/buttons/OptionsButton.js'
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import LinearProgress from '@mui/material/LinearProgress';
 import Box from '@mui/material/Box';
 import { array_is_same, fast_hash_53, primitive_to_string, range_string_to_sequence, rotl, rotr } from './utils/Algorithm.js';
+import { float_to_tc } from './utils/Timecode';
 
 // App class globals
 const APP_DATA_PROVIDER         = api;
@@ -100,21 +102,12 @@ export default class App extends React.Component {
             successful_results: false,
             current_query_parameters: APP_QUERYPARAMS_DEFAULT,
 
-            // Buffer and control variables for managing results from API
-            result: APP_RESULT_DEFAULT,
-            result_overflow: [],
-            result_overflow_page: 0,
-            result_offset: 0,
-
             // State for WIP Rotating Prefetch Buffer Model
             _display_buffer_index: 0,
             _result_offset: 0,
             _data_buffers: [],
             _overflow_buffer: [],
             
-            // For prefetching data
-            result_prefetch_1: APP_RESULT_DEFAULT,
-
             // Loading control variables for API queries
             awaiting_results: false,
             
@@ -140,8 +133,8 @@ export default class App extends React.Component {
         this.episodesInput =   React.createRef();
         this.charactersInput = React.createRef();
         this.linesInput =      React.createRef();
-        this.tableHeader =     React.createRef();
-        this.tableBody =       React.createRef();
+        // this.tableHeader =     React.createRef();
+        // this.tableBody =       React.createRef();
         this.appHeader =       React.createRef();
         this.appSearchBar =    React.createRef();
         this.appPageSettings = React.createRef();
@@ -158,13 +151,15 @@ export default class App extends React.Component {
         if (this.appHeader.current !== null
             && this.appSearchBar.current !== null
             && this.appPageSettings.current !== null
-            && this.tableHeader.current !== null
-            && this.tableBody.current !== null)
+            // && this.tableHeader.current !== null
+            // && this.tableBody.current !== null
+            )
         {
             const screen_height = window.innerHeight;
             const header_height = this.appHeader.current.offsetHeight;
             const searchbar_height = this.appSearchBar.current.offsetHeight;
-            const tableheader_height = this.tableHeader.current.offsetHeight;
+            // const tableheader_height = this.tableHeader.current.offsetHeight;
+            const tableheader_height = 300 
             const pagesettings_height = this.appPageSettings.current.offsetHeight;
             const table_size = screen_height - (header_height + searchbar_height + tableheader_height + pagesettings_height);
 
@@ -176,7 +171,8 @@ export default class App extends React.Component {
 
     getRowSizePx() {
         let row_px = 0;
-        const table_size = this.getAvailableTableSpacePx() - this.tableHeader.current.offsetHeight;
+        // const table_size = this.getAvailableTableSpacePx() - this.tableHeader.current.offsetHeight;
+        const table_size = 300;
         const aspect_ratio = window.screen.width / window.screen.height;
 
         let aspect_coef = (aspect_ratio > 1.25) ? 22 : 10;
@@ -220,8 +216,8 @@ export default class App extends React.Component {
                                  && this.episodesInput.current !== null
                                  && this.charactersInput.current !== null
                                  && this.linesInput.current !== null
-                                 && this.tableHeader.current !== null
-                                 && this.tableBody.current !== null
+                                 // && this.tableHeader.current !== null
+                                 // && this.tableBody.current !== null
                                  && this.appHeader.current !== null
                                  && this.appSearchBar.current !== null
                                  && this.appPageSettings.current !== null;
@@ -266,9 +262,6 @@ export default class App extends React.Component {
     updateFieldState(key, value) {
         this.setState((s,p) => ({ [key]: value }));
     }
-
-// ------------------------------------------------------------------------------------------------------------------------------------------
-// START OF WIP IMPLEMENTATION FOR ROTATING PREFETCH BUFFER MODEL
 
     _isFlagSuccess(flag) {
         return flag === APP_FLAG_SUCCESS;
@@ -374,6 +367,57 @@ export default class App extends React.Component {
         this.setState({ page: next_local_page });
     }
 
+    _getTableData() {
+        const api_data = this._getPageData();
+
+        const entries = [];
+        let entry = {};
+        for (const e of api_data) {
+            const keys = Object.keys(e);
+
+            for (const k of keys) {
+                if (k === API_RESULT_KEYS.TIMECODE) {
+                    const tick_rate = e[API_RESULT_KEYS.TICK_RATE];
+                    const frame_rate = e[API_RESULT_KEYS.FRAME_RATE];
+
+                    const tcin = float_to_tc(e[k][0], frame_rate, tick_rate);
+                    const tcout = float_to_tc(e[k][1], frame_rate, tick_rate);
+                    const duration = float_to_tc(e[k][1] - e[k][0], frame_rate, tick_rate);
+
+                    entry['tcin'] = tcin;
+                    entry['tcout'] = tcout;
+                    entry['duration'] = duration;
+                }
+
+                else if (    k !== API_RESULT_KEYS.FRAME_RATE
+                          && k !== API_RESULT_KEYS.TICK_RATE
+                          && k !== API_RESULT_KEYS.AGE_RANGE  )
+                {
+                    entry[k] = e[k];
+                }
+            }
+
+            entries.push({...entry});
+            entry = {};
+        }
+        
+        const table_data = {
+            headers: [
+                { key: API_RESULT_KEYS.PROJECT,   title: 'Project'   },
+                { key: API_RESULT_KEYS.SEGMENT,   title: 'Episode'   },
+                { key: API_RESULT_KEYS.CHARACTER, title: 'Character' },
+                { key: 'tcin',                    title: 'TC In'     },
+                { key: 'tcout',                   title: 'TC Out'    },
+                { key: 'duration',                title: 'Duration'  },
+                { key: API_RESULT_KEYS.LINE,      title: 'Line'      },
+            ],
+
+            body: [...entries]
+        };
+
+        return table_data;
+    }
+
     _getPageData() {
         // Function constants
         const api_max_query        = this._getBufferMaxRemoteResults();
@@ -392,7 +436,7 @@ export default class App extends React.Component {
         const slice_delta = (current_local_page * current_page_display) - (api_current_page * api_max_query);
         const slice_start = Math.max(0, slice_delta);
         const slice_end = Math.min(display_buffer.length, slice_start + current_page_display);
-        
+
         return display_buffer.slice(slice_start, slice_end);
     }
 
@@ -485,16 +529,6 @@ export default class App extends React.Component {
         } 
         
         else if (current_buffer_is_mid) {
-            //    1 2 3 rotr
-            // -> 3 1 2 shift
-            // -> _ 1 2 unshift
-            // -> 0 1 2
-
-            //    0 1 2 rotl
-            // -> 1 2 0 pop
-            // -> 1 2 _ push
-            // -> 1 2 3
-
             const { projects, episodes, characters, lines, limit, page, offset } = this.state._data_buffers[this.state._display_buffer_index].query_params;
             const boundary_index = (direction > 0) ? this._getTotalStoredBuffers() - 1 : 0;
             const qry_page_offset = (direction > 0) ? 1 : -1;
@@ -523,7 +557,6 @@ export default class App extends React.Component {
                     console.log(`[ERROR]: could not insert new query when rotating buffers: ${e}`);
                 }
             );
-
         }
         
         else if (current_buffer_is_end) {
@@ -678,349 +711,7 @@ export default class App extends React.Component {
         return { flag: APP_FLAG_FAILURE, result: APP_RESULT_DEFAULT };
     }
 
-// END OF WIP IMPLEMENTATION FOR ROTATING PREFETCH BUFFER MODEL
-// ------------------------------------------------------------------------------------------------------------------------------------------
-
-    async offsetPage(offset = 0) {
-        // Determine new page number according to input offset
-        const next_local_page_requested = (this.state.page + offset <= 0) ? 0 : this.state.page + offset;
-        const total_local_page = Math.ceil(this.state.result.data[API_RESULT_KEYS.TOTAL_QUERY] / this.getPageRowDisplay());
-        let next_local_page_state = 0;
-
-        if (next_local_page_requested < 0) {
-            next_local_page_state = 0;
-        } else if (next_local_page_requested >= total_local_page) {
-            next_local_page_state = this.state.page;
-        } else {
-            next_local_page_state = next_local_page_requested;
-        }
-        
-        // Pages for local current results and swap buffer results
-        const remote_max_query = this.state.result.data[API_RESULT_KEYS.MAX_QUERY];
-        const current_results_page = this.state.result.data[API_RESULT_KEYS.PAGE];
-        const swap_results_page = this.state.result_prefetch_1.data[API_RESULT_KEYS.PAGE];
-
-        // Determine if we've cycled up & down past the mid-way point of the remote page
-        const direction_up   = next_local_page_state * this.getPageRowDisplay() - (current_results_page * remote_max_query) > Math.floor(remote_max_query / 2) && this.state.page > this.state.previous_page;
-        const direction_down = next_local_page_state * this.getPageRowDisplay() - (current_results_page * remote_max_query) < Math.floor(remote_max_query / 2) && this.state.page < this.state.previous_page;
-
-        // Determine if we're swapping buffers
-        const ne_current_offset = Math.floor(next_local_page_state * this.getPageRowDisplay() / remote_max_query) !== current_results_page;
-        
-        // Create offset value for new pre-fetch query according to specified input offset and within the bounds of min/max pagination values
-        const new_offset = (Math.floor(next_local_page_state * this.getPageRowDisplay() / remote_max_query) + offset <= 0)
-            ? 0
-            : Math.floor(next_local_page_state * this.getPageRowDisplay() / remote_max_query) + offset;
-        
-        // Calculate missing entries from current buffer to fill last page
-        const max_mod_pages = Math.floor(remote_max_query % this.getPageRowDisplay());
-        const total_missing_buffer = this.getPageRowDisplay() - max_mod_pages + (max_mod_pages * current_results_page);
-
-        if (this.state.result_offset !== total_missing_buffer) this.setState({ result_offset: total_missing_buffer });
-
-         // Pre-fetch data for new page and fill overflow buffer
-         if (current_results_page >= swap_results_page && direction_up || current_results_page <= swap_results_page && direction_down && (current_results_page !== 0 && swap_results_page !== 0)) {
-            console.log('[MESSAGE] pre-fetching data from API');
-            // console.log('current page', current_results_page,'swap page', swap_results_page)
-            // TODO: This is no longer being called asyncronously - handle case if pre-fetch failed
-            // TODO: Add promise failure callback
-            this.lineSearch(false, true, new_offset).then(() => {
-                this.setState({
-                    result_overflow: this.state.result_prefetch_1.data[API_RESULT_KEYS.RESULTS].slice(0, this.state.result_offset),
-                    result_overflow_page: swap_results_page
-                });
-            });
-        }
-
-        // Fill overflow buffer when empty and prefetch data is available
-        const prefetch_ready = this.state.result_prefetch_1.data[API_RESULT_KEYS.RESULTS].length > 0;
-        const overflow_same = this.state.result_overflow_page === current_results_page;
-
-        if (total_missing_buffer > 0
-            && overflow_same
-            && prefetch_ready)
-        {
-            this.setState({
-                result_overflow: this.state.result_prefetch_1.data[API_RESULT_KEYS.RESULTS].slice(0, total_missing_buffer),
-                result_overflow_page: swap_results_page
-            });
-        }
-
-        // Swap buffers if we've reached the end of the current buffer
-        if (ne_current_offset) {
-            console.log('[MESSAGE] swapping results with pre-fetched buffer');
-            this.swapResultBuffers();
-        }
-
-        // Update page state
-        this.updateFieldState('previous_page', this.state.page);
-        this.updateFieldState('page', next_local_page_state);
-    }
-
-    // Callback method for preparing user search inputs and querying database
-    async lineSearch(new_query, prefetch = false, page = 0, offset = 0, limit = 0) {
-        // Storage for parsed user input
-        let list_episodes = [];
-        let list_projects =   (new_query) ? [] : this.state.current_query_parameters.projects;
-        let list_characters = (new_query) ? [] : this.state.current_query_parameters.characters;
-        let list_lines =      (new_query) ? [] : this.state.current_query_parameters.lines;
-        let eps_sequence =    (new_query) ? [] : this.state.current_query_parameters.episodes;
-
-        // Query hrefs with parameters
-        let qry_href = '';
-        let qry_page   = (new_query) ? 0 : page;
-        let qry_offset = (new_query) ? 0 : offset;
-        
-        // Collect user input from form fields
-        const user_input = [
-            {project: this.state.projects,     data: list_projects   },
-            {episode: this.state.episodes,     data: list_episodes   },
-            {character: this.state.characters, data: list_characters },
-            {line: this.state.lines,           data: list_lines      }
-        ]
-        
-        // Determine if new search is only white space
-        const re_space = new RegExp('^ *$');
-        const invalid_search = (re_space.test(this.state.projects))
-                              && (re_space.test(this.state.characters))
-                              && (re_space.test(this.state.episodes))
-                              && (re_space.test(this.state.lines));
-
-        // TODO: Handle invalid searches in UI
-        if (invalid_search) return;
-        
-        if (new_query && !invalid_search) {
-            
-            // Parse and seperate user options
-            for (const i of user_input) {
-                const k = Object.keys(i)[0];
-                let delimiter = '';
-                
-                
-                if (k === 'episode' || k === 'character') {
-                    // Handle case where user uses | as delimiter
-                    // TODO: Use better procedure for testing which delimiter is being used
-                    const re_delimiter = new RegExp('\\|');
-                    
-                    if (re_delimiter.test(i[k])) delimiter = '|';
-                    else delimiter = ',';
-                    
-                } else if (k === 'project' || k === 'line') {
-                    delimiter = '|';
-                }
-                
-                const dirty_data = i[k].split(delimiter);
-                for (const n of dirty_data) {
-                    i['data'].push(n.trim().toLowerCase());
-                }
-            }
-            
-            // Transform ranged episodes to a sequence of comma-seperated values
-            // TODO: Constrain max range to prevent user from generating too many numbers
-            eps_sequence = range_string_to_sequence(list_episodes);
-
-            // Build the URL based on user inputs
-            // TODO: Backwards offset for swap buffer query
-            qry_href = build_query_string(list_projects, eps_sequence, list_characters, list_lines, 0, qry_page, qry_offset);
-
-            // Handle if current query parameters are the same as previous
-            // TODO: Display message in UI for identical query parameters
-            // console.log('current query', this.state.current_query, 'new query', qry_href);
-            list_projects.sort();
-            list_episodes.sort();
-            list_characters.sort();
-            list_lines.sort();
-
-            const identical_query = array_is_same(list_projects, this.state.current_query_parameters.projects)
-                                    && array_is_same(list_episodes, this.state.current_query_parameters.episodes)
-                                    && array_is_same(list_characters, this.state.current_query_parameters.characters)
-                                    && array_is_same(list_lines, this.state.current_query_parameters.lines)
-                                    && qry_page === this.state.current_query_parameters.page
-                                    && qry_offset === this.state.current_query_parameters.offset;
-
-            if (identical_query) {
-                console.log('[MESSAGE] current query parameters matches previous: skipping search');
-                return;
-            }
-            
-            // Update state for current query parameters
-            // Clear current results
-            this.setState({
-                 page: 0,
-                 result: APP_RESULT_DEFAULT,
-                 current_query: qry_href,
-                 current_query_parameters: {
-                    projects: list_projects,
-                    episodes: list_episodes,
-                    characters: list_characters,
-                    lines: list_lines,
-                    page: qry_page,
-                    offset: qry_offset
-                 }
-            });
-        } else {
-            qry_href = build_query_string(list_projects, eps_sequence, list_characters, list_lines, 0, qry_page, qry_offset);
-        }
-        
-        // Make query to the API
-        try {
-            // Set flag for pending results from API if current buffer is empty
-            // console.log('load state', this.state.result.data[API_RESULT_KEYS.RESULTS].length <= 0 && !prefetch);
-            if (this.state.result.data[API_RESULT_KEYS.RESULTS].length <= 0 && !prefetch) this.setState({ awaiting_results: true });
-
-            if (!invalid_search) console.log('[MESSAGE] making call to API with href:', qry_href);
-            const qry_response = ((!invalid_search)
-                ? await api.get(qry_href)
-                : { status: 0 }
-            );
-            
-            // TODO: Cancel search if no valid input parameters were passed
-            // TODO: Various response validation before setting results
-            // TODO: Set UI to loading state for potential long response times from API
-            
-            // Check if data is valid and store relevant data in payload
-            const qry_data = ((qry_response.status === 200)
-                ? qry_response.data
-                : APP_RESULT_DEFAULT.data
-            );
-            
-            const results = {
-                query: qry_href,
-                query_params: [list_projects, eps_sequence, list_characters, list_lines, qry_page, qry_offset],
-                data: qry_data
-            }
-            
-            // Set state for results
-            // TODO: Manage syncronisation of swap buffers
-            if (prefetch) {
-                this.setState({result_prefetch_1: results});
-            } else {
-                this.setState({result: results});
-            }
-            
-            if (qry_response.status === 200) this.setState({ successful_results: true });
-            else this.setState({ successful_results: false });
-
-            // Reset flag for pending results from API
-            if (this.state.awaiting_results) this.setState({ awaiting_results: false });
-        } catch (e) {
-            // TODO: handle failed query in UI
-            console.error(`[ERROR] query to API failed with message: ${e}`);
-        }
-    }
-    
-    // Method for clearing search fields
-    clearSearch(clear_results = true) {
-        // Clear UI input fields
-        this.setState({
-            projects: '',
-            characters: '',
-            episodes: '',
-            lines: ''
-        });
-
-        // Clear app search state
-        if (clear_results) {
-            this.setState({
-                page: 0,
-                result: APP_RESULT_DEFAULT,
-                result_overflow : [],
-                result_overflow_page: 0,
-                result_offset: 0,
-                current_query: '',
-                current_query_parameters: APP_QUERYPARAMS_DEFAULT,
-                successful_results: false,
-                result_prefetch_1: APP_RESULT_DEFAULT,
-                awaiting_results: false
-            });
-        }
-    }
-
-    async refreshBuffers() {
-        console.log('awaiting results', this.state.awaiting_results);
-        if (!this.state.awaiting_results) {
-            // Current page information
-            const current_remote_page = this.state.result.data[API_RESULT_KEYS.PAGE];
-            const current_swap_remote_page = this.state.result_prefetch_1.data[API_RESULT_KEYS.PAGE];
-            const required_remote_page = Math.floor(this.state.page * this.getPageRowDisplay() / this.state.result.data[API_RESULT_KEYS.MAX_QUERY]);
-
-            // Check if required page is same as current page
-            const ne_local_remote_page = required_remote_page !== current_remote_page;
-    
-            // Check if required data is present in swap buffer
-            const ne_required_page_in_swap = required_remote_page !== current_swap_remote_page;
-    
-            if (ne_local_remote_page) {
-                const new_offset = Math.max(0, required_remote_page);
-    
-                console.log('new page', new_offset);
-    
-                // Fill primary results buffer with new page
-                if (ne_required_page_in_swap) {
-                    console.log('resize new search');
-                    await this.lineSearch(false, false, new_offset);
-                } else {
-                    console.log('resize swap');
-                    this.swapResultBuffers(true);
-                }
-
-                // Fill swap buffer with closest next page
-                const closest_swap_page = (this.state.page * this.getPageRowDisplay() - (this.state.result.data[API_RESULT_KEYS.PAGE] * this.state.result.data[API_RESULT_KEYS.MAX_QUERY]) >= Math.floor(this.state.result.data[API_RESULT_KEYS.MAX_QUERY] / 2))
-                ? Math.min(Math.ceil(this.state.result.data[API_RESULT_KEYS.MAX_QUERY] / this.getPageRowDisplay()), this.state.result.data[API_RESULT_KEYS.PAGE] + 1)
-                : Math.max(0, this.state.result.data[API_RESULT_KEYS.PAGE] - 1);
-            
-                const ne_required_swap_page = Math.floor(this.state.page * this.getPageRowDisplay() / this.state.result_prefetch_1.data[API_RESULT_KEYS.MAX_QUERY]) !== this.state.result_prefetch_1.data[API_RESULT_KEYS.PAGE];
-                if (ne_required_swap_page) {
-                    console.log('new swap page', closest_swap_page);
-                    await this.lineSearch(false, true, closest_swap_page);
-                }
-
-                // Update overflow buffer with new swap buffer
-                const max_mod_pages = Math.floor(this.state.result.data[API_RESULT_KEYS.MAX_QUERY] % this.getPageRowDisplay());
-                const total_missing_buffer = this.getPageRowDisplay() - max_mod_pages + (max_mod_pages * this.state.result.data[API_RESULT_KEYS.PAGE]);
-
-                if (total_missing_buffer > 0) {
-                    this.setState({
-                        result_overflow: this.state.result_prefetch_1.data[API_RESULT_KEYS.RESULTS].slice(0, total_missing_buffer),
-                        result_overflow_page: this.state.result_prefetch_1.data[API_RESULT_KEYS.PAGE]
-                    });
-                } else {
-                    this.setState({
-                        result_overflow: [],
-                        result_overflow_page: 0
-                    });
-                }
-            }
-        }
-    }
-
-    swapResultBuffers(reset_overflow = false) {
-        // Temporarily store current results
-        const temp_result = this.state.result;
-        const temp_overflow = (reset_overflow) ? [] : this.state.result.data[API_RESULT_KEYS.RESULTS].slice(0, this.state.result_offset);
-
-        this.setState({
-            // Update overflow buffers with new prefetched buffer data
-            result_overflow: temp_overflow,
-
-            // Set current buffers to prefetch data
-            result: this.state.result_prefetch_1,
-            
-            // Set prefetch buffers to current results
-            result_prefetch_1: temp_result
-        });
-    }
-
-    refreshTable() {
-        // Make sure DOM references have been set
-        if (this.areReferencesReady()) {
-            document.documentElement.style.setProperty('--table-max-size', `${this.getAvailableTableSpacePx()}px`);
-            document.documentElement.style.setProperty('--table-data-max-size', `${this.getAvailableTableSpacePx() - this.tableHeader.current.offsetHeight}px`);
-            document.documentElement.style.setProperty('--table-row-height', `${this.getRowSizePx()['size_px']}px`);
-        }
-    }
-
-    componentDidMount() {
+     componentDidMount() {
         // Listen for shortcuts
         window.addEventListener('keydown', async (e) => {
             // console.log(e.key);
@@ -1061,6 +752,7 @@ export default class App extends React.Component {
             
             // Clear search fields on 1x Escape
             if (e.key === 'Escape') {
+                e.preventDefault();
                 const inputs = [
                     {key: 'projects',   element: this.projectsInput.current   },
                     {key: 'episodes',   element: this.episodesInput.current   },
@@ -1152,17 +844,10 @@ export default class App extends React.Component {
                 // Handle data in buffers according to new page sizing
                 this.refreshBuffers();
             }
-
-            
-            // Reset computed CSS properties for table display
-            this.refreshTable();
         });
 
         // Update page display based on mounted DOM references
-        this.setState({ page_display_options: [this.getRowSizePx()['total_fit'], 50, 125, 250] });
-
-        // Reset computed CSS properties for table display
-        this.refreshTable();
+        // this.setState({ page_display_options: [this.getRowSizePx()['total_fit'], 50, 125, 250] });
     }
 
     componentWillUnmount() {
@@ -1220,36 +905,10 @@ export default class App extends React.Component {
                     page={this.state.page}
                 />
                 <div className='table-wrapper'>
-                    <Table
-                        page={this.state.page}
-                        rowsPerPage={this.getPageRowDisplay()}
-                        searchResult={this._getPageData()}
-                        overflowResult={this.state.result_overflow}
-                        resultOffset={this.state.result_offset}
-                        loadingState={this.state.awaiting_results}
-                        setRefCallbacks={{
-                            updateTableHeadRef: (ref) => { this.setAppRefs([{ tableHeader: ref }]); },
-                            updateTableBodyRef: (ref) => { this.setAppRefs([{ tableBody: ref }]);   },
-                        }}
+                    <CollapsibleTable
+                        tableData={this._getTableData()}
+                        prepareDataRows={() => { console.log('[WARNING] CollapsibleTable prepareDataRows callback not implemented'); return; }}
                     />
-                    <div className='dummy-bottom-spacer'></div>
-                    <div ref={this.appPageSettings} className='table-nav-container'>
-                        <OptionsButton
-                            currentOptionIndex={this.state.page_display_selection}
-                            optionsList={this.state.page_display_options}
-                            displayValue={(index, value) => (index > 0) ? `Display: ${value}` : 'Display: Fit' }
-                            updateCallback={(value) => { if (value >= this.state.page_display_options.length) value = 0; this.updateFieldState('page_display_selection', value); this.refreshBuffers(); this.refreshTable(); }}
-                        />
-                        <TablePagination
-                            className='pagination-bar'
-                            totalResults={this._getBufferTotalRemoteResults()}
-                            refreshTableCallback={() => { this.refreshTable(); }}
-                            page={this.state.page}
-                            rowsPerPage={this.getPageRowDisplay()}
-                            updatePageCallback={(v) => { this._offsetPage(v); }}
-                        />
-                        <div style={{ marginRight: '3rem', visibility: 'hidden' }}>{this.getPageRowDisplay()}</div>
-                    </div>
                 </div>
             </div>
         );

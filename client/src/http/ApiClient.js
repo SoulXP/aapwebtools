@@ -32,7 +32,8 @@ export const API_RESULT_KEYS = {
     LINE: 'prepared_cue',
     TIMECODE: 'timeline_values',
     FRAME_RATE: 'frame_rate',
-    TICK_RATE: 'tick_rate'
+    TICK_RATE: 'tick_rate',
+    AGE_RANGE: 'age_range',
 };
 
 export const API_LOCAL_DEFAULTS = {
