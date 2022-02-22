@@ -58,5 +58,6 @@ body {
   visibility: hidden;
   height: 1px;
   width: 100%;
+  bottom: 0;
   background-color: red;
 }

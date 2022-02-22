@@ -1,5 +1,7 @@
 .table-container {
-    size: 1rem;
+    position: relative;
+
+    overflow-y: scroll;
 }
 
 .table-header-row {

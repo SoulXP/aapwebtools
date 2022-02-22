@@ -16,6 +16,23 @@ import Paper from '@mui/material/Paper';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
+// Memoization comparison function
+function props_equal(previous, next) {
+    const p_hash = previous.dataHash;
+    const n_hash = next.dataHash;
+
+    const p_value = previous.tableData;
+    const n_value = next.tableData;
+    
+    return p_hash(p_value) === n_hash(n_value);
+}
+
+// Schema for table types
+Row.propTypes = {
+    row: PropTypes.any.isRequired,
+};
+
+// Row entry function
 function Row({ row }) {
     const [open, setOpen] = useState(false);
     const keys = Object.keys(row);
@@ -34,12 +51,13 @@ function Row({ row }) {
                 </TableCell>
                 {
                     keys.map((c, i) => {
-                        if (i === 0) return (<TableCell key={i} sx={{ width: '1rem' }} component='th' scope='row'>{row[c]}</TableCell>);
-                        if (i === keys.length - 1) return (<TableCell key={i} sx={{ width: '42%', fontWeight: 'bold'}} >{row[c]}</TableCell>);
-                        return (<TableCell key={i} sx={{ width: '1rem' }} >{row[c]}</TableCell>);
+                        if (i === 0) return (<TableCell key={i} component='th' scope='row'>{row[c]}</TableCell>);
+                        if (i === keys.length - 1) return (<TableCell key={i} sx={{ width: '800px' }} >{row[c]}</TableCell>);
+                        return (<TableCell key={i} >{row[c]}</TableCell>);
                     })
                 }
             </TableRow>
+            {/*
             <TableRow>
                 <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
                      <Collapse in={open} timeout="auto" unmountOnExit>
@@ -64,27 +82,25 @@ function Row({ row }) {
                     </Collapse>
                 </TableCell>
             </TableRow>
+            */}
         </React.Fragment>
     );
 }
 
-Row.propTypes = {
-    row: PropTypes.any.isRequired,
-};
-
-export default function CollapsibleTable({ tableData, prepareDataRows }) {
+// Main component
+function CollapsibleTable({ tableData, prepareDataRows }) {
     const { headers, body } = tableData;
 
     return (
         <TableContainer className='table-container' component={Paper}>
             <Table aria-label="collapsible table">
-                <TableHead >
-                    <TableRow >
-                        <TableCell sx={{ width: '1rem' }}/>
+                <TableHead>
+                    <TableRow>
+                        <TableCell />
                         {
                             headers.map((c, i) => {
-                                if (i === headers.length - 1) return (<TableCell key={i} sx={{ width: '42%', fontWeight: 'bold'}} >{c.title}</TableCell>);
-                                return (<TableCell key={i} sx={{ fontWeight: 'bold'}} >{c.title}</TableCell>);
+                                if (i === headers.length - 1) return (<TableCell key={i} sx={{ width: '800px' }} >{c.title}</TableCell>);
+                                return (<TableCell key={i} >{c.title}</TableCell>);
                             })
                         }
                     </TableRow>
@@ -105,3 +121,5 @@ export default function CollapsibleTable({ tableData, prepareDataRows }) {
     );
 }
 
+// Memoize component
+export default React.memo(CollapsibleTable, props_equal);

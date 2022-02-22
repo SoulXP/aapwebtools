@@ -573,31 +573,27 @@ export default class App extends React.Component {
     }
 
     async _dispatchQuery(parameters) {
-        if (this._getTotalStoredBuffers() > 0) {
-            // TODO
-        } else {
-            // Build query URI
-            const { projects, episodes, characters, lines, limit, page, offset } = parameters;
-            
-            let qry_urls = [];
-
-            this.setState({ awaiting_results: true });
-            
-            for (let i = 0; i < this._getTotalAllowedBuffers(); i++) {
-                qry_urls.push({
-                    url: build_query_string(projects, episodes, characters, lines, limit, page + i, offset),
-                    parameters: { projects, episodes, characters, lines, limit, page: page + i, offset }
-                });
-            }
-
-            if (!this._isFlagSuccess(await this._fillBuffersWithQueries(qry_urls, parameters))) {
-                // Handle UI state
-                console.log('[MESSAGE] could not fill buffers with provided parameters');
-                this.setState({ successful_results: false });
-                return APP_FLAG_FAILURE;
-            }
-        }
+        // Build query URI
+        const { projects, episodes, characters, lines, limit, page, offset } = parameters;
         
+        let qry_urls = [];
+
+        this.setState({ awaiting_results: true });
+        
+        for (let i = 0; i < this._getTotalAllowedBuffers(); i++) {
+            qry_urls.push({
+                url: build_query_string(projects, episodes, characters, lines, limit, page + i, offset),
+                parameters: { projects, episodes, characters, lines, limit, page: page + i, offset }
+            });
+        }
+
+        if (!this._isFlagSuccess(await this._fillBuffersWithQueries(qry_urls, parameters))) {
+            // Handle UI state
+            console.log('[MESSAGE] could not fill buffers with provided parameters');
+            this.setState({ successful_results: false });
+            return APP_FLAG_FAILURE;
+        }
+
         this.setState({ awaiting_results: false });
         this.setState({ successful_results: true });
         return APP_FLAG_SUCCESS;
@@ -768,7 +764,6 @@ export default class App extends React.Component {
             
             // Clear clear search results on 2x Escape
             if (e.key === 'Escape' && this.state.btn_last_pressed === 'Escape' && !this.state.key_timed_out) {
-                // this.clearSearch(true);
                 this._clearSearch(true);
                 this.projectsInput.current.focus();
                 this.setState({ current_input_focus: 0 });
@@ -845,9 +840,11 @@ export default class App extends React.Component {
                 <div className='table-wrapper'>
                     <CollapsibleTable
                         tableData={this._getTableData()}
+                        dataHash={(v) => { return fast_hash_53(primitive_to_string(v), APP_HASH_SEED); }}
                         prepareDataRows={() => { console.log('[WARNING] CollapsibleTable prepareDataRows callback not implemented'); return; }}
                     />
                 </div>
+                <div className='dummy-bottom-spacer'>.</div>
             </div>
         );
     }
