@@ -34,14 +34,15 @@ function Row({ row }) {
                 </TableCell>
                 {
                     keys.map((c, i) => {
-                        if (i === 0) return (<TableCell key={i} component='th' scope='row'>{row[c]}</TableCell>);
-                        return (<TableCell key={i}>{row[c]}</TableCell>);
+                        if (i === 0) return (<TableCell key={i} sx={{ width: '1rem' }} component='th' scope='row'>{row[c]}</TableCell>);
+                        if (i === keys.length - 1) return (<TableCell key={i} sx={{ width: '42%', fontWeight: 'bold'}} >{row[c]}</TableCell>);
+                        return (<TableCell key={i} sx={{ width: '1rem' }} >{row[c]}</TableCell>);
                     })
                 }
             </TableRow>
-            {/*<TableRow>
+            <TableRow>
                 <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
-                    <Collapse in={open} timeout="auto" unmountOnExit>
+                     <Collapse in={open} timeout="auto" unmountOnExit>
                         <Box sx={{ margin: 1 }}>
                             <Typography variant="h6" gutterBottom component="div">
                                 History
@@ -49,33 +50,20 @@ function Row({ row }) {
                             <Table size="small" aria-label="purchases">
                                 <TableHead>
                                     <TableRow>
-                                        <TableCell>Date</TableCell>
-                                        <TableCell>Customer</TableCell>
-                                        <TableCell align="right">Amount</TableCell>
-                                        <TableCell align="right">Total price ($)</TableCell>
+                                        <TableCell>Column 1</TableCell>
+                                        <TableCell>Column 2</TableCell>
+                                        <TableCell align="right">Column 3</TableCell>
+                                        <TableCell align="right">Column 4</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                {
-                                    row.history.map((historyRow) => {
-                                        <TableRow key={historyRow.date}>
-                                            <TableCell component="th" scope="row">
-                                                {historyRow.date}
-                                            </TableCell>
-                                            <TableCell>{historyRow.customerId}</TableCell>
-                                            <TableCell align="right">{historyRow.amount}</TableCell>
-                                            <TableCell align="right">
-                                                {Math.round(historyRow.amount * row.price * 100) / 100}
-                                            </TableCell>
-                                        </TableRow>
-                                    })
-                                }
+                                
                                 </TableBody>
                             </Table>
                         </Box>
                     </Collapse>
                 </TableCell>
-            </TableRow>*/}
+            </TableRow>
         </React.Fragment>
     );
 }
@@ -88,14 +76,15 @@ export default function CollapsibleTable({ tableData, prepareDataRows }) {
     const { headers, body } = tableData;
 
     return (
-        <TableContainer component={Paper}>
+        <TableContainer className='table-container' component={Paper}>
             <Table aria-label="collapsible table">
-                <TableHead>
-                    <TableRow>
-                        <TableCell />
+                <TableHead >
+                    <TableRow >
+                        <TableCell sx={{ width: '1rem' }}/>
                         {
                             headers.map((c, i) => {
-                                return (<TableCell key={i}>{c.title}</TableCell>);
+                                if (i === headers.length - 1) return (<TableCell key={i} sx={{ width: '42%', fontWeight: 'bold'}} >{c.title}</TableCell>);
+                                return (<TableCell key={i} sx={{ fontWeight: 'bold'}} >{c.title}</TableCell>);
                             })
                         }
                     </TableRow>

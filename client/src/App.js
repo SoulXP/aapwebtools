@@ -241,10 +241,10 @@ export default class App extends React.Component {
 
         // Set focus according to state
         switch (this.state.current_input_focus) {
-            case 0: this.projectsInput.current.focus(); break;
+            case 0: this.projectsInput.current.focus();   break;
             case 1: this.charactersInput.current.focus(); break;
-            case 2: this.episodesInput.current.focus(); break;
-            case 3: this.linesInput.current.focus(); break;
+            case 2: this.episodesInput.current.focus();   break;
+            case 3: this.linesInput.current.focus();      break;
             default: console.error('[ERROR] no reference to input field was set'); break;
         }
     }
@@ -714,22 +714,13 @@ export default class App extends React.Component {
      componentDidMount() {
         // Listen for shortcuts
         window.addEventListener('keydown', async (e) => {
-            // console.log(e.key);
-            // console.log(this.state.btn_last_pressed);
-
-            // Developer keys
-            if (e.key === '\`') {
-                this.getRowSizePx();
-            }
-            
             // Get modifier state
             const modifier_key = (window.navigator.platform === 'Win32') ? (e.ctrlKey && e.shiftKey) : e.metaKey;
-            const ctrl_key = (window.navigator.platform === 'Win32') ? (e.altKey && e.shiftKey) : e.ctrlKey;
-            const shift_key = e.shiftKey;
+            const ctrl_key     = (window.navigator.platform === 'Win32') ? (e.altKey && e.shiftKey) : e.ctrlKey;
+            const shift_key    = e.shiftKey;
 
             // Make a line search on Ctrl/Cmd + Enter
             if (e.key === 'Enter' && modifier_key) {
-                // await this.lineSearch(true);
                 this._consumeUserInput();
                 this._dispatchQuery(this.state.current_query_parameters);
             }
@@ -737,7 +728,6 @@ export default class App extends React.Component {
             // Change results to previous page on Ctrl/Cmd + Left
             if (e.key === 'ArrowLeft' && modifier_key) {
                 e.preventDefault();
-                // this.offsetPage(-1);
                 this._offsetPage(-1);
                 this._refreshBuffers();
             }
@@ -745,7 +735,6 @@ export default class App extends React.Component {
             // Change results to next page on Ctrl/Cmd + Right
             if (e.key === 'ArrowRight' && modifier_key) {
                 e.preventDefault();
-                // this.offsetPage(1);
                 this._offsetPage(1);
                 this._refreshBuffers();
             }
@@ -778,32 +767,11 @@ export default class App extends React.Component {
             }
             
             // Clear clear search results on 2x Escape
-            if (e.key === 'Escape' && this.state.btn_last_pressed === 'Escape' && !this.state.key_timed_out)
-            {
+            if (e.key === 'Escape' && this.state.btn_last_pressed === 'Escape' && !this.state.key_timed_out) {
                 // this.clearSearch(true);
                 this._clearSearch(true);
                 this.projectsInput.current.focus();
                 this.setState({ current_input_focus: 0 });
-            }
-
-            // Change page display to level 1
-            if (e.key === '1' && ctrl_key) {
-                this.setState({ page_display_selection: 0 });
-            }
-
-            // Change page display to level 2
-            if (e.key === '2' && ctrl_key) {
-                this.setState({ page_display_selection: 1 });
-            }
-
-            // Change page display to level 3
-            if (e.key === '3' && ctrl_key) {
-                this.setState({ page_display_selection: 2 });
-            }
-
-            // Change page display to level 4
-            if (e.key === '4' && ctrl_key) {
-                this.setState({ page_display_selection: 3 });
             }
 
             // Navigate left to right on Shift + Tab
@@ -822,40 +790,10 @@ export default class App extends React.Component {
             this.setState({ key_timed_out: false });
             this.timeLastKeyPressed();
         });
-
-        // Window resizing event listener
-        window.addEventListener('resize', (e) => {
-            if (this.getPageRowDisplay() !== this.getRowSizePx()['total_fit']) {
-                // Handle total row change
-                const updated_options = this.state.page_display_options.map((c, i) => {
-                    if (i === 0) return this.getRowSizePx()['total_fit'];
-                    else return c;
-                });
-                this.setState({ page_display_options: updated_options });
-
-                // Handle new last page
-                if (this.state.page >= Math.ceil(this.state.result.data[API_RESULT_KEYS.TOTAL_QUERY] / this.getPageRowDisplay()) - 1) {
-                    this.setState({
-                        page: Math.ceil(this.state.result.data[API_RESULT_KEYS.TOTAL_QUERY] / this.getPageRowDisplay()) - 1,
-                        previous_page: Math.ceil(this.state.result.data[API_RESULT_KEYS.TOTAL_QUERY] / this.getPageRowDisplay()) - 2
-                    });
-                }
-
-                // Handle data in buffers according to new page sizing
-                this.refreshBuffers();
-            }
-        });
-
-        // Update page display based on mounted DOM references
-        // this.setState({ page_display_options: [this.getRowSizePx()['total_fit'], 50, 125, 250] });
     }
 
     componentWillUnmount() {
         window.removeEventListener('keydown', (e) => {
-            // TODO
-        });
-
-        window.removeEventListener('resize', (e) => {
             // TODO
         });
     }
