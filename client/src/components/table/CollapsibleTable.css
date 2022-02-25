@@ -1,7 +1,8 @@
 .table-container {
     position: relative;
-
+    width: 100%;
     overflow-y: scroll;
+    height: 100%;
 }
 
 .table-header-row {
@@ -9,5 +10,8 @@
 }
 
 .table-body-row {
+}
 
+.table-body-row-data {
+    text-align: left;
 }
