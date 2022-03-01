@@ -39,7 +39,7 @@ function CollapsibleTable({ tableData, prepareDataRows }) {
 
     return (
         <div className='table-container'>
-            <table>
+            <table className='table-fill-screen'>
                 <thead>
                     <tr>
                     {
@@ -62,6 +62,7 @@ function CollapsibleTable({ tableData, prepareDataRows }) {
                     }
                 </tbody>
             </table>
+            <div style={{ position: 'absolute', bottom:0, left: 0, width: '100%' }}>hello</div>
         </div>
     );
 }

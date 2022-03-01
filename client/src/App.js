@@ -837,14 +837,11 @@ export default class App extends React.Component {
                     line={this.state.lines}
                     page={this.state.page}
                 />
-                <div className='table-wrapper'>
-                    <CollapsibleTable
-                        tableData={this._getTableData()}
-                        dataHash={(v) => { return fast_hash_53(primitive_to_string(v), APP_HASH_SEED); }}
-                        prepareDataRows={() => { console.log('[WARNING] CollapsibleTable prepareDataRows callback not implemented'); return; }}
-                    />
-                </div>
-                <div className='dummy-bottom-spacer'>.</div>
+                <CollapsibleTable
+                    tableData={this._getTableData()}
+                    dataHash={(v) => { return fast_hash_53(primitive_to_string(v), APP_HASH_SEED); }}
+                    prepareDataRows={() => { console.log('[WARNING] CollapsibleTable prepareDataRows callback not implemented'); return; }}
+                />
             </div>
         );
     }

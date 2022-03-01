@@ -34,7 +34,6 @@ body {
 .table-wrapper {
     display: flex;
     justify-content: center;
-    max-height:  var(--table-max-size);
     flex-direction: column;
     align-items: center;
     text-align: center;
