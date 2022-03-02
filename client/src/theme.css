@@ -1,0 +1,10 @@
+:root {
+    --theme-color-prim: #ff0000;
+    --theme-color-sec: #ffffff;
+    --theme-color-bg: #ffffff;
+    --theme-color-fg: #ffffff;
+    --theme-color-text: #ffffff;
+    --theme-color-text-alt: #ffffff;
+
+    --theme-font: Varela Round, sans-serif;
+}

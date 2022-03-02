@@ -803,7 +803,7 @@ export default class App extends React.Component {
         const backgroundColor = this.getBackgroundColor();
 
         return (
-            <div style={{ backgroundColor: backgroundColor }} className='App'>
+            <div style={{ backgroundColor: backgroundColor }} className='app'>
                 {
                     this.state.awaiting_results
                     &&
@@ -813,7 +813,7 @@ export default class App extends React.Component {
                         </Box>
                     </ThemeProvider>
                 }
-                <h1 ref={this.appHeader} className='header'>AAP Lore</h1>
+                <h1 style={{ marginTop: '1rem', textAlign: 'center' }} ref={this.appHeader} className='header'>AAP Lore</h1>
                 <Searchbar
                     updateFieldCallbacks={{
                             updateProjects:    (v) => { this.updateFieldState('projects', v);             },
@@ -840,7 +840,6 @@ export default class App extends React.Component {
                 <CollapsibleTable
                     tableData={this._getTableData()}
                     dataHash={(v) => { return fast_hash_53(primitive_to_string(v), APP_HASH_SEED); }}
-                    prepareDataRows={() => { console.log('[WARNING] CollapsibleTable prepareDataRows callback not implemented'); return; }}
                 />
             </div>
         );

@@ -13,56 +13,92 @@ function props_equal(previous, next) {
     return p_hash(p_value) === n_hash(n_value);
 }
 
+function set_width(e: React.BaseSyntheticEvent<DragEvent, EventTarget & HTMLDivElement, EventTarget>) {
+    e.preventDefault();
+
+    const sibling = e.currentTarget.previousElementSibling;
+    const sibling_width = sibling.offsetWidth + 1;
+}
+
+function table_header(headers) {
+    const header_data = (data) => {
+        const data_seperated = [];
+
+        for (const d of data) {
+            data_seperated.push({ type: 'data',      value: d.title });
+            data_seperated.push({ type: 'seperator', value: null    });
+        }
+
+        return data_seperated.map((c, i) => {
+            if (c.type === 'seperator') return (<div key={i} draggable onDrag={set_width} className='ctable-header-data-sep'></div>);
+            return (
+                <div key={i} className='ctable-header-row-data'>{c.value}</div>
+            );
+        });
+    };
+
+    return (
+        <div className='ctable-header'>
+        {
+            <div className='ctable-header-row'>
+            {
+                header_data(headers)
+            }
+            </div>
+        }
+        </div>
+    );
+}
+
+function table_body(headers, body) {
+    const body_data = (data) => {
+        return data.map((c, i) => {
+            const row = {};
+            for (const k of headers) {
+                if (k.key in c) row[k.key] = c[k.key];
+            }
+            return (<TableRow key={i} row={row} />);
+        });
+    };
+
+    return (
+        <div className='ctable-body'>
+        {
+            body_data(body)
+        }
+        </div> 
+    );
+}
+
 // Row entry function
-function Row({ row }) {
+function TableRow({ row }) {
     const keys = Object.keys(row);
     
     return (
         <React.Fragment>
-            <tr className='table-body-row'>
+            <div className='ctable-body-row'>
             {
                 keys.map((c, i) => {
-                    const class_name = 'table-body-row-data'
-                    if (i === 0) return (<td key={i} className={class_name}>{row[c]}</td>);
-                    if (i === keys.length - 1) return (<td key={i} className={class_name}>{row[c]}</td>);
-                    return (<td key={i} className={class_name}>{row[c]}</td>);
+                    return (<div key={i} className='ctable-body-row-data'>{row[c]}</div>);
                 })
             }
-            </tr>
+            </div>
        </React.Fragment>
     );
 }
 
 // Main component
-function CollapsibleTable({ tableData, prepareDataRows }) {
+function CollapsibleTable({ tableData }) {
     const { headers, body } = tableData;
 
     return (
-        <div className='table-container'>
-            <table className='table-fill-screen'>
-                <thead>
-                    <tr>
-                    {
-                        headers.map((c, i) => {
-                            if (i === headers.length - 1) return (<td key={i}>{c.title}</td>);
-                            return (<td key={i} >{c.title}</td>);
-                        })
-                    }
-                    </tr>
-                </thead>
-                <tbody>
-                    {
-                        body.map((c, i) => {
-                            const row = {};
-                            for (const k of headers) {
-                                if (k.key in c) row[k.key] = c[k.key];
-                            }
-                            return (<Row key={i} row={row}/>);
-                        })
-                    }
-                </tbody>
-            </table>
-            <div style={{ position: 'absolute', bottom:0, left: 0, width: '100%' }}>hello</div>
+        <div className='ctable-container'>
+        {
+            table_header(headers)
+        }
+        {
+            table_body(headers, body)
+        }
         </div>
     );
 }
