@@ -12,13 +12,16 @@
 }
 
 .ctable-header-row-data {
-    /* text-align: center; */
     font-size: 1rem;
 }
 
+.ctable-header-row,
 .ctable-body-row {
-    height: fit-content;
-    width: fit-content;
+    display: flex;
+    flex: 1;
+    flex-direction: row;
+    justify-content: left;
+    align-self: center;
 }
 
 .ctable-body-row-data {
@@ -26,17 +29,28 @@
 }
 
 .ctable-header-row-data,
+.ctable-header-row-last,
 .ctable-body-row-data {
-    display: inline-block;
     padding: 0.5rem;
-    width: 8rem;
+    user-select: none;
+}
+
+.ctable-header-row-data,
+.ctable-body-row-data {
+    width: fit-content;
 }
 
 .ctable-header-data-sep {
-    display: inline-block;
     cursor: col-resize;
-    position: absolute;
-    height: 34px;
-    width: 0.5rem;
-    padding: 0 0 0 0.5rem;
+    height: 16px;
+    width: 2px;
+    margin: 0 1rem 0 1rem;
+    background-color: red;
+    z-index: 1;
+    align-self: center;
 }
+
+.ctable-header-row-last {
+    width: fit-content;
+}
+

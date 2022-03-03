@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import './styles.css';
 import './App.css';
 import Searchbar from './components/searchbar/SearchBar.js';
@@ -403,13 +403,13 @@ export default class App extends React.Component {
         
         const table_data = {
             headers: [
-                { key: API_RESULT_KEYS.PROJECT,   title: 'Project'   },
-                { key: API_RESULT_KEYS.SEGMENT,   title: 'Episode'   },
-                { key: API_RESULT_KEYS.CHARACTER, title: 'Character' },
-                { key: 'tcin',                    title: 'TC In'     },
-                { key: 'tcout',                   title: 'TC Out'    },
-                { key: 'duration',                title: 'Duration'  },
-                { key: API_RESULT_KEYS.LINE,      title: 'Line'      },
+                { key: API_RESULT_KEYS.PROJECT,   title: 'Project',   state: (f, v = 128) => f(v) },
+                { key: API_RESULT_KEYS.SEGMENT,   title: 'Episode',   state: (f, v = 128) => f(v) },
+                { key: API_RESULT_KEYS.CHARACTER, title: 'Character', state: (f, v = 128) => f(v) },
+                { key: 'tcin',                    title: 'TC In',     state: (f, v = 128) => f(v) },
+                { key: 'tcout',                   title: 'TC Out',    state: (f, v = 128) => f(v) },
+                { key: 'duration',                title: 'Duration',  state: (f, v = 128) => f(v) },
+                { key: API_RESULT_KEYS.LINE,      title: 'Line',      state: (f, v = 512) => f(v) },
             ],
 
             body: [...entries]
