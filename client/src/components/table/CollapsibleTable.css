@@ -9,11 +9,14 @@
 
 .ctable-header-row {
     font-weight: bold;
+    overflow: hidden;
+    width: fit-content;
 }
 
 .ctable-header-row-data {
     font-size: 1rem;
     min-width: fit-content;
+    max-width: 75%;
 }
 
 .ctable-header-row,
@@ -49,6 +52,7 @@
     background-color: red;
     z-index: 1;
     align-self: center;
+    min-width: 2px;
 }
 
 .ctable-header-row-last {

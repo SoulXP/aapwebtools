@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef, forwardRef } from 'react';
 import './CollapsibleTable.css'
 import { API_RESULTS_KEYS } from '../../http/ApiClient.js'
+import { Cabin } from '@mui/icons-material';
 
 // Memoization comparison function
 function props_equal(previous, next) {
@@ -13,7 +14,7 @@ function props_equal(previous, next) {
     return p_hash(p_value) === n_hash(n_value);
 }
 
-function table_header(headers, dragging, dividerIndex, setWidth, setElementIndex, setElement, onMouseDown) {
+function table_header(headers, dragging, dividerIndex, setWidth, setElement, onMouseDown) {
     const header_data = (data) => {
         const data_seperated = [];
 
@@ -40,11 +41,9 @@ function table_header(headers, dragging, dividerIndex, setWidth, setElementIndex
                     index={i}
                     className='ctable-header-row-data'
                     width={c.size[0]}
-                    setWidth={c.size[1]}
                     dragging={dragging}
                     selectedDividerIndex={dividerIndex}
                     setEventWidth={setWidth}
-                    setEventElementIndex={setElementIndex}
                     setEventElement={setElement}
                 >
                 {
@@ -88,20 +87,21 @@ function table_body(headers, body) {
     );
 }
 
-function on_mouse_down(event, index, set_active, set_index, set_element_index, element, set_element, set_position, set_dragging) {
-    set_position(event.clientX);
-    set_active(event.target);
-    set_index(index);
-    set_element(element)
-    set_element_index(index - 1);
+function on_mouse_down(event, divider_index, set_divider_index, set_active_divider, set_divider_position, set_element_index, set_dragging) {
+    set_divider_position(event.clientX);
+    set_active_divider(event.target);
+    set_divider_index(divider_index);
+    set_element_index(divider_index - 1);
     set_dragging(true);
-    console.log('divider', index);
-    console.log('element', element);
     return;
 }
 
-function on_mouse_move(event, index, element, divider, setWidth) {
-    if (element) console.log('element', element.offsetWidth);
+function on_mouse_move(event, element, divider_position, set_divider_position, width) {
+    if (element && divider_position) {
+        const new_width = width + event.clientX - divider_position;
+        element.style.width = `${new_width}px`;
+        set_divider_position(event.clientX);
+    };
 
     return;
 }
@@ -117,13 +117,14 @@ function TableDivider({ children, index, className, mouseDown }) {
 }
 
 // Resizable Data
-function TableData({ children, index, className, width, setWidth, dragging, selectedDividerIndex, setEventWidth, setEventElementIndex, setEventElement }) {
-    const ref = React.createRef();
+function TableData({ children, index, className, width, dragging, selectedDividerIndex, setEventWidth, setEventElement }) {
+    const ref = useRef(undefined);
 
     useEffect(() => {
         if (dragging) {
-            if (ref.current && index === selectedDividerIndex - 1) { 
+            if (ref.current && index === selectedDividerIndex - 1) {
                 setEventElement(ref.current);
+                setEventWidth(ref.current.clientWidth);
             }
         }
     }, [dragging, index, selectedDividerIndex]);
@@ -163,10 +164,10 @@ function CollapsibleTable({ tableData }) {
     const [width, setWidth] = useState(undefined);
     const [element, setElement] = useState(undefined);
     const [elementIndex, setElementIndex] = useState(undefined);
-
-    const mouse_down = useCallback((event, index) => on_mouse_down(event, index, setSelectedDivider, setSelectedDividerIndex, setElementIndex, element, setElement, setDividerXPosition, setDragging), [dragging, selectedDivider, selectDividerIndex, elementIndex]);
-    const mouse_move = useCallback((event) => on_mouse_move(event, elementIndex, element, selectedDivider, setWidth), [elementIndex, element, selectedDivider, setSelectedDividerIndex]);
-    const mouse_up = useCallback((event) => { setDragging(false); console.log('mouse up'); }, [dragging]);
+    
+    const mouse_down = (event, index) => on_mouse_down(event, index, setSelectedDividerIndex, setSelectedDivider, setDividerXPosition, setElementIndex, setDragging);
+    const mouse_move = (event) => on_mouse_move(event, element, dividerXPosition, setDividerXPosition, width);
+    const mouse_up = (event) => { setDragging(false); console.log('mouse up'); };
 
     useEffect(() => {
         if (dragging) {
@@ -184,7 +185,7 @@ function CollapsibleTable({ tableData }) {
     return (
         <div className='ctable-container'>
         {
-            table_header(headers, dragging, selectDividerIndex, setWidth, setElementIndex, setElement, mouse_down)
+            table_header(headers, dragging, selectDividerIndex, setWidth, setElement, mouse_down)
         }
         {
             table_body(headers, body)
