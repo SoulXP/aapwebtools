@@ -13,6 +13,7 @@
 
 .ctable-header-row-data {
     font-size: 1rem;
+    min-width: fit-content;
 }
 
 .ctable-header-row,

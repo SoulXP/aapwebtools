@@ -403,13 +403,13 @@ export default class App extends React.Component {
         
         const table_data = {
             headers: [
-                { key: API_RESULT_KEYS.PROJECT,   title: 'Project',   state: (f, v = 128) => f(v) },
-                { key: API_RESULT_KEYS.SEGMENT,   title: 'Episode',   state: (f, v = 128) => f(v) },
-                { key: API_RESULT_KEYS.CHARACTER, title: 'Character', state: (f, v = 128) => f(v) },
-                { key: 'tcin',                    title: 'TC In',     state: (f, v = 128) => f(v) },
-                { key: 'tcout',                   title: 'TC Out',    state: (f, v = 128) => f(v) },
-                { key: 'duration',                title: 'Duration',  state: (f, v = 128) => f(v) },
-                { key: API_RESULT_KEYS.LINE,      title: 'Line',      state: (f, v = 512) => f(v) },
+                { key: API_RESULT_KEYS.PROJECT,   title: 'Project',   size: (f, v = 128) => f(v) },
+                { key: API_RESULT_KEYS.SEGMENT,   title: 'Episode',   size: (f, v = 128) => f(v) },
+                { key: API_RESULT_KEYS.CHARACTER, title: 'Character', size: (f, v = 128) => f(v) },
+                { key: 'tcin',                    title: 'TC In',     size: (f, v = 128) => f(v) },
+                { key: 'tcout',                   title: 'TC Out',    size: (f, v = 128) => f(v) },
+                { key: 'duration',                title: 'Duration',  size: (f, v = 128) => f(v) },
+                { key: API_RESULT_KEYS.LINE,      title: 'Line',      size: (f, v = 512) => f(v) },
             ],
 
             body: [...entries]
